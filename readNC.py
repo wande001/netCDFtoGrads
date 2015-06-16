@@ -8,11 +8,12 @@ import grads
 MV = 1e20
 smallNumber = 1E-39
 grads_exe = '/home/water2/niko/Programs/opengrads-2.1.a2.oga.1.princeton/opengrads'
+grads_exe = '/home/niko/Programs/opengrads-2.1.a2.oga.1.princeton/opengrads'
 
 # file cache to minimize/reduce opening/closing files.  
 filecache = dict()
 
-def openNMMEfile(ncFile,varName, dateInput,useDoy = None, LatitudeLongitude = False, specificFillValue = None):
+def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay = None, useDoy = None, LatitudeLongitude = False, specificFillValue = None, model = "NMME"):
     
     # Get netCDF file and variable name:
     if ncFile in filecache.keys():
@@ -33,25 +34,39 @@ def openNMMEfile(ncFile,varName, dateInput,useDoy = None, LatitudeLongitude = Fa
             f.variables['lon'] = f.variables['longitude']
         except:
             pass
+    if model == "NMME":
+        orgDate = datetime.datetime(1850,2,2)
+    if model == "PGF":
+        orgDate = datetime.datetime(1901,1,1)
     
     date = dateInput
     if useDoy == "Yes": 
         idx = dateInput - 1
+    elif endDay != "None":
+        if isinstance(date, str) == True and isinstance(endDay, str) == True:
+            startDay = datetime.datetime.strptime(str(date),'%Y-%m-%d')
+            lastDay = datetime.datetime.strptime(str(endDay),'%Y-%m-%d')
+        dateDif = datetime.datetime(startDay.year,startDay.month,startDay.day) - orgDate
+        deltaDays = datetime.datetime(lastDay.year,lastDay.month,lastDay.day) - orgDate
+        # time index (in the netCDF file)
+        nctime = f.variables['time']  # A netCDF time variable object.
+        print startDay
+        print lastDay
+        idx = range(int(np.where(nctime[:] == int(dateDif.days))[0]), int(np.where(nctime[:] == int(deltaDays.days))[0])+1)
     else:
         if isinstance(date, str) == True:
 	  date = datetime.datetime.strptime(str(date),'%Y-%m-%d') 
-        dateDif = datetime.datetime(date.year,date.month,date.day) - datetime.datetime(1850,2,2)
+        dateDif = datetime.datetime(date.year,date.month,date.day) - orgDate
         # time index (in the netCDF file)
         nctime = f.variables['time']  # A netCDF time variable object.
-    idx = int(np.where(nctime[:] == int(dateDif.days))[0])
-    print idx
-    print dateDif
-    print date
+        idx = int(np.where(nctime[:] == int(dateDif.days))[0])
+    
     outputData = f.variables[varName][idx,:,:]       # still original data
     
     f = None
     
     return(outputData)
+
 
 def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
                                       longName = None):
@@ -112,7 +127,7 @@ def data2NetCDF(ncFile,varName,varField,timeStamp,posCnt = None):
 
 def readGrads(gradsfile,gradsVarName, gradsTime):
   ga = grads.GrADS(Bin=grads_exe,Window=False,Echo=False)
-
+  
   ga("open " + gradsfile)
   
   if gradsTime != None:
