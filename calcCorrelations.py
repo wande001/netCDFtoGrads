@@ -42,10 +42,12 @@ def lagToDateTime(date, lag):
     return(tempEndDate)
 
 
-def returnSeasonalForecast(dateInput, endDay, model, varname, lag):
+def returnSeasonalForecast(dateInput, endDay, model, varname, lag, ensNr = 1, dirLoc=""):
     deltaDay = lagToDateTime(endDay, lag) - lagToDateTime(dateInput, lag)
     
-    data = np.zeros((deltaDay.days+1,181,360))
+    data = np.zeros((deltaDay.days+1,180,360))
+    
+    print data.shape
     
     start = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
     end = datetime.datetime.strptime(str(endDay),'%Y-%m-%d')
@@ -62,13 +64,18 @@ def returnSeasonalForecast(dateInput, endDay, model, varname, lag):
                 if len(str(m)) < 2: zero = "0"
                 zero2 = ""
                 if len(str(tempEnd.month)) < 2: zero2 = "0"
-                ncFile = "prlr_day_"+model+"_"+str(y)+zero+str(m)+"_r1i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
                 tempEndDate = lagToDateTime(startDate, lag+1)-datetime.timedelta(days=1)
                 zero = ""
                 if len(str(tempEndDate.month)) < 2: zero = "0"
                 endDate = str(tempEndDate.year)+"-"+zero+str(tempEndDate.month)+"-"+str(tempEndDate.day)
-                print ncFile
-                data[range((lagToDateTime(startDate, lag) - lagToDateTime(dateInput, lag)).days,(tempEndDate - lagToDateTime(dateInput, lag)).days+1),:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag), endDay = endDate)
+                tempData = np.zeros((ensNr, 180,360))
+                for ens in range(ensNr):
+                    ncFile = "prlr_day_"+model+"_"+str(y)+zero+str(m)+"_r1i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
+                    if model == "FLOR":
+                        ncFile = dirLoc+"pr_day_GFDL-FLORB01_FLORB01-P1-ECDA-v3.1-zero"+str(m)+str(y)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc"
+                        print ncFile
+                        tempData[ens,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag), endDay = endDate, model=model)
+                data[range((lagToDateTime(startDate, lag) - lagToDateTime(dateInput, lag)).days,(tempEndDate - lagToDateTime(dateInput, lag)).days+1),:,:] = ensembleMean(tempData)
     return(data)
 
 def aggregateTime(data, breaks, timeDimension = 0):
@@ -81,8 +88,8 @@ def aggregateTime(data, breaks, timeDimension = 0):
         prev = b
     return(outPut)
 
-def ensembleMean(data, breaks, ensDimension = 0):
-    outPut = data[:,:,:,:].mean(axis=ensDimension)
+def ensembleMean(data, ensDimension = 0):
+    outPut = data[:,:,:].mean(axis=ensDimension)
     return(outPut)
 
 def aggregateSpace(data, extent = 0):
@@ -107,27 +114,28 @@ def aggregateSpace(data, extent = 0):
 
 
 dateInput = "1981-01-01"
-endDay = "1981-05-31"
-model = "CanCM3"
-varName = "prlr"
-lag = 5
+endDay = "1981-01-31"
+model = "FLOR"
+varName = "pr"
+lag = 0
+dirLoc = "output1.NOAA-GFDL.FLORB-01.day.atmos/"
 
-NMME = returnSeasonalForecast(dateInput, endDay, model, varName, lag) * 86400.* 1000.
+NMME = returnSeasonalForecast(dateInput, endDay, model, varName, lag, dirLoc = dirLoc, ensNr = 12) * 86400.* 1000.
 
 ncFile = "prec.nc"
 varName = "prec"
 
 dataPGF = readNC(ncFile, varName, lagToDateStr(dateInput, lag), endDay=lagToDateStr(endDay, lag), model="PGF")
 
-spaceNMME = aggregateSpace(NMME, extent=10)
-spacePGF = aggregateSpace(dataPGF, extent=10)
+spaceNMME = aggregateSpace(NMME, extent=1)
+spacePGF = aggregateSpace(dataPGF, extent=1)
 
-corMap = np.zeros((180,362))
-signMap = np.zeros((180,362))
+corMap = np.zeros((180,360))
+signMap = np.zeros((180,360))
 
 for i in range(180):
   for j in range(360):
-    out = spearmanr(spacePGF[:,i,j+1], spaceNMME[:,i,j])
+    out = spearmanr(spacePGF[:,i,j], spaceNMME[:,i,j])
     corMap[i,j] = out[0]
     signMap[i,j] = out[1]
 

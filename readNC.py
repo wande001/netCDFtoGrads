@@ -7,8 +7,8 @@ import grads
 # Global variables:
 MV = 1e20
 smallNumber = 1E-39
-grads_exe = '/home/water2/niko/Programs/opengrads-2.1.a2.oga.1.princeton/opengrads'
-grads_exe = '/home/niko/Programs/opengrads-2.1.a2.oga.1.princeton/opengrads'
+grads_exe = '/home/water1/niko/Programs/opengrads-2.1.a2.oga.1.princeton/opengrads'
+#grads_exe = '/home/niko/Programs/opengrads-2.1.a2.oga.1.princeton/opengrads'
 
 # file cache to minimize/reduce opening/closing files.  
 filecache = dict()
@@ -38,7 +38,8 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
         orgDate = datetime.datetime(1850,2,2)
     if model == "PGF":
         orgDate = datetime.datetime(1901,1,1)
-    
+    if model == "FLOR":
+        orgDate = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
     date = dateInput
     if useDoy == "Yes": 
         idx = dateInput - 1
@@ -52,7 +53,11 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
         nctime = f.variables['time']  # A netCDF time variable object.
         print startDay
         print lastDay
-        idx = range(int(np.where(nctime[:] == int(dateDif.days))[0]), int(np.where(nctime[:] == int(deltaDays.days))[0])+1)
+        print int(dateDif.days)+0.5
+        if model == "FLOR":
+            idx = range(int(np.where(nctime[:] == int(dateDif.days)+0.5)[0]), int(np.where(nctime[:] == int(deltaDays.days)+0.5)[0])+1)
+        else:
+            idx = range(int(np.where(nctime[:] == int(dateDif.days))[0]), int(np.where(nctime[:] == int(deltaDays.days))[0])+1)
     else:
         if isinstance(date, str) == True:
 	  date = datetime.datetime.strptime(str(date),'%Y-%m-%d') 
@@ -66,7 +71,6 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
     f = None
     
     return(outputData)
-
 
 def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
                                       longName = None):
@@ -125,7 +129,7 @@ def data2NetCDF(ncFile,varName,varField,timeStamp,posCnt = None):
   rootgrp.close()
 
 
-def readGrads(gradsfile,gradsVarName, gradsTime):
+def readGrads(gradsfile,gradsVarName, gradsTime, lon=[0.5, 359.5], lat=[-89.5, 89.5]):
   ga = grads.GrADS(Bin=grads_exe,Window=False,Echo=False)
   
   ga("open " + gradsfile)
@@ -133,6 +137,8 @@ def readGrads(gradsfile,gradsVarName, gradsTime):
   if gradsTime != None:
     ga("set t " + gradsTime)
         
+  ga("set lon "+ str(lon[0]) +" "+str(lon[1]))
+  ga("set lat "+ str(lat[0]) +" "+str(lat[1]))
   longitudes = ga.coords().lon
   latitudes = ga.coords().lat
   time = ga.coords().denv.tyme[0]
