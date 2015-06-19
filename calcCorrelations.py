@@ -25,12 +25,12 @@ for event in range(1):
     ncFile = "../prec.nc"
     varName = "prec"
 
-    dataPGF = readForcing(ncFile, varName, lagToDateStr(dateInput, lag), endDay=lagToDateStr(endDay, lag), model="PGF")
+    dataPGF = readForcing(ncFile, varName, lagToDateStr(dateInput, lag), endDay=lagToDateStr(endDay, lag), lag=lag, model="PGF")
 
-    for lag in range(8):
-        print lag
-        spaceNMME = aggregateSpace(NMME, extent=lag)
-        spacePGF = aggregateSpace(dataPGF, extent=lag)
+    for space in range(8):
+        print space
+        spaceNMME = aggregateSpace(NMME, extent=space)
+        spacePGF = aggregateSpace(dataPGF, extent=space)
 
         corMap = np.zeros((180,360))
         signMap = np.zeros((180,360))
@@ -41,8 +41,8 @@ for event in range(1):
             corMap[i,j] = out[0]
             signMap[i,j] = out[1]
 
-        data2NetCDF("FLOR_lag0.nc", "correlation_"+str(lag), corMap, lagToDateTime(dateInput, lag), posCnt=event)
-        data2NetCDF("FLOR_lag0.nc", "signif_"+str(lag), signMap, lagToDateTime(dateInput, lag), posCnt=event)
+        data2NetCDF("FLOR_lag0.nc", "correlation_"+str(space), corMap, lagToDateTime(dateInput, lag), posCnt=event)
+        data2NetCDF("FLOR_lag0.nc", "signif_"+str(space), signMap, lagToDateTime(dateInput, lag), posCnt=event)
 
 #corMap[signMap > 0.05] = 0.0
 

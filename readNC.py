@@ -104,10 +104,10 @@ def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
         for i in range(len(varName)):
             shortVarName = varName[i]
             longVarName  = varName[i]
-            if longName != None: longVarName = longName[i]
+            if longName != None: longVarName = longName
             var= rootgrp.createVariable(shortVarName,'f4',('time','lat','lon',) ,fill_value=MV,zlib=False)
             var.standard_name = varName[i]
-            var.long_name = longVarName[i]
+            var.long_name = longVarName
             var.units = varUnits[i]
     else:    
         shortVarName = varName
@@ -198,7 +198,7 @@ def lagToDateTime(date, lag):
     return(tempEndDate)
 
 
-def returnSeasonalForecast(dateInput, endDay, model, varname, lag, ensNr = 1, dirLoc=""):
+def returnSeasonalForecast(dateInput, endDay, model, varName, lag, ensNr = 1, dirLoc=""):
     deltaDay = lagToDateTime(endDay, lag).day - lagToDateTime(dateInput, lag).day + 1
     deltaYear = lagToDateTime(endDay, lag).year - lagToDateTime(dateInput, lag).year + 1
     
@@ -273,7 +273,7 @@ def aggregateSpace(data, extent = 0):
     else:
         return(data)
 
-def readForcing(ncFile, varName, dateInput, endDay, model="PGF"):
+def readForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF"):
     deltaDay = lagToDateTime(endDay, lag).day - lagToDateTime(dateInput, lag).day + 1
     deltaYear = lagToDateTime(endDay, lag).year - lagToDateTime(dateInput, lag).year + 1
     
