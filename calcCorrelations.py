@@ -3,11 +3,11 @@ from readNC import *
 from scipy.stats.stats import spearmanr
 import sys
 
-lagTime = int(sys.argv[1])
+lag = int(sys.argv[5])
 step = int(sys.argv[2])
 end = int(sys.argv[3])
 month = int(sys.argv[4])
-tempScale = int(sys.argv[5])
+tempScale = int(sys.argv[1])
 
 startMonth = 01
 
@@ -32,7 +32,9 @@ for event in range(0,end,step):
 
     ncFile = "../prec.nc"
     varName = "prec"
-
+    
+    print lagToDateStr(dateInput, lag)
+    print lagToDateStr(endDay, lag)
     dataPGF = readForcing(ncFile, varName, lagToDateStr(dateInput, lag), endDay=lagToDateStr(endDay, lag), lag=lag, model="PGF")
 
     #for space in range(9):

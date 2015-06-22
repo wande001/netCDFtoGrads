@@ -254,8 +254,8 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, ensNr = 1, di
                     print ncFile
                     print lagToDateStr(startDate, lag)
                     print endDate
-                    #tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag), endDay = endDate, model=model)
-            #data[lastEntry,:,:] = aggregateTime(ensembleMean(tempData))
+                    tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag), endDay = endDate, model=model)
+            data[lastEntry,:,:] = aggregateTime(ensembleMean(tempData))
             lastEntry += 1
     return(data)
 
@@ -309,14 +309,14 @@ def readForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF"):
         tempStartDate = datetime.datetime.strptime(str(str(y)+"-"+str(m)+"-01"),'%Y-%m-%d')
         zero = ""
         if len(str(m)) < 2: zero = "0"
-        startDate = str(tempStartDate.year)+"-"+zero+str(tempStartDate.month)+"-01"
+        zeroDay = ""
+        if len(str(start.day)) < 2: zeroDay="0"
+        startDate = str(tempStartDate.year)+"-"+zero+str(tempStartDate.month)+"-"+zeroDay+str(start.day)
         tempEnd = datetime.datetime.strptime(str(str(y+1)+"-"+str(m)+"-01"),'%Y-%m-%d') - datetime.timedelta (days = 1)
+        print startDate
         if tempStartDate >= start and tempStartDate < (end - datetime.timedelta (days = 1)):
-            tempEndDate = lagToDateTime(startDate, lag+1)-datetime.timedelta(days=1)
-            zeroDay = ""
-            minDay = np.minimum(end.day, tempEndDate.day)
-            if len(str(minDay)) < 2: zeroDay = "0"            
-            endDate = str(tempEndDate.year)+"-"+zero+str(tempEndDate.month)+"-"+zeroDay+str(minDay)
-            data[lastEntry,:,:] = aggregateTime(readNC(ncFile, varName, lagToDateStr(startDate, lag), endDay=endDate, model="PGF"))
+            endDate = lagToDateStr(findMonthEnd(y,m,end.day), 0)
+            print endDate
+            data[lastEntry,:,:] = aggregateTime(readNC(ncFile, varName, lagToDateStr(startDate, 0), endDay=endDate, model="PGF"))
             lastEntry += 1
     return(data)
