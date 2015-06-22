@@ -9,14 +9,14 @@ end = int(sys.argv[3])
 month = int(sys.argv[4])
 tempScale = int(sys.argv[1])
 
-startMonth = 01
+ncOutputFile = "../FLOR_tempScale_"+str(tempScale)+"_lag_"+str(lag)+".nc"
 
 startDays = np.tile(["01","16"],24)
 endDays = np.tile(["15","31","15","28","15","31","15","30","15","31","15","30","15","31","15","31","15","30","15","31","15","30","15","31"],2)
 inputMonth = np.tile(np.repeat(["01","02","03","04","05","06","07","08","09","10","11","12"],2),2)
 varNames = ["correlation_0","signif_0", "correlation_1","signif_1", "correlation_2","signif_2", "correlation_3","signif_3", "correlation_4","signif_4", "correlation_5","signif_5", "correlation_6","signif_6", "correlation_7","signif_7", "correlation_8","signif_8"]
 varUnits = ["-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-"]
-createNetCDF("../FLOR_lag_"+str(tempScale)+"_month_"+str(startMonth)+".nc", varNames, varUnits, np.arange(-89.5,90), np.arange(0.5,360), loop=True)
+createNetCDF(ncOutputFile, varNames, varUnits, np.arange(-89.5,90), np.arange(0.5,360), loop=True)
 
 for event in range(0,end,step):
     dateInput = "1981-"+inputMonth[event]+"-"+startDays[event]
@@ -37,22 +37,22 @@ for event in range(0,end,step):
     print lagToDateStr(endDay, lag)
     dataPGF = readForcing(ncFile, varName, lagToDateStr(dateInput, lag), endDay=lagToDateStr(endDay, lag), lag=lag, model="PGF")
 
-    #for space in range(9):
-        #print space
-        #spaceNMME = aggregateSpace(NMME, extent=space)
-        #spacePGF = aggregateSpace(dataPGF, extent=space)
+    for space in range(9):
+        print space
+        spaceNMME = aggregateSpace(NMME, extent=space)
+        spacePGF = aggregateSpace(dataPGF, extent=space)
 
-        #corMap = np.zeros((180,360))
-        #signMap = np.zeros((180,360))
+        corMap = np.zeros((180,360))
+        signMap = np.zeros((180,360))
 
-        #for i in range(180):
-          #for j in range(360):
-            #out = spearmanr(spacePGF[:,i,j], spaceNMME[:,i,j])
-            #corMap[i,j] = out[0]
-            #signMap[i,j] = out[1]
+        for i in range(180):
+          for j in range(360):
+            out = spearmanr(spacePGF[:,i,j], spaceNMME[:,i,j])
+            corMap[i,j] = out[0]
+            signMap[i,j] = out[1]
 
-        #data2NetCDF("../FLOR_lag_"+str(tempScale)+"_month_"+str(startMonth)+".nc", "correlation_"+str(space), corMap, lagToDateTime(dateInput, lag), posCnt=event)
-        #data2NetCDF("../FLOR_lag_"+str(tempScale)+"_month_"+str(startMonth)+".nc", "signif_"+str(space), signMap, lagToDateTime(dateInput, lag), posCnt=event)
+        data2NetCDF(ncOutputFile, "correlation_"+str(space), corMap, lagToDateTime(dateInput, lag), posCnt=event)
+        data2NetCDF(ncOutputFile, "signif_"+str(space), signMap, lagToDateTime(dateInput, lag), posCnt=event)
 
 #corMap[signMap > 0.05] = 0.0
 
