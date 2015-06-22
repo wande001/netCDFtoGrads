@@ -231,24 +231,20 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, ensNr = 1, di
         zeroDay = ""
         if len(str(start.day)) < 2: zeroDay="0"
         startDate = str(tempStartDate.year)+"-"+zero+str(tempStartDate.month)+"-"+zeroDay+str(start.day)
-        print startDate
         tempEnd = datetime.datetime.strptime(str(str(y+1)+"-"+str(m)+"-01"),'%Y-%m-%d') - datetime.timedelta (days = 1)
         if tempStartDate.year >= start.year and tempStartDate < (end - datetime.timedelta (days = 1)):
             zero = ""
             if len(str(m)) < 2: zero = "0"
             zero2 = ""
             if len(str(tempEnd.month)) < 2: zero2 = "0"
-            print str(y)+"-"+zero+str(m)+"-"+str(end.day)
             tempEndDate = lagToDateTime(findMonthEnd(y,m,end.day), lag)
             #tempEndDate = lagToDateTime(str(y)+"-"+zero+str(m)+"-"+str(end.day), lag)
             zero = ""
             if len(str(tempEndDate.month)) < 2: zero = "0"
-            print end
-            print tempEndDate
-            endDate = lagToDateStr(str(y)+"-"+zero+str(m)+"-"+str(end.day), lag)
+            endDate = lagToDateStr(findMonthEnd(y,m,end.day), lag)
+            #endDate = lagToDateStr(findMonthEnd(str(y)+"-"+zero+str(m)+"-"+str(end.day)), lag)
             deltaDay = (datetime.datetime.strptime(endDate,'%Y-%m-%d')-datetime.datetime.strptime(lagToDateStr(startDate, lag),'%Y-%m-%d')).days + 1
             tempData = np.zeros((ensNr, deltaDay, 180,360))
-            print deltaDay
             for ens in range(ensNr):
                 ncFile = "prlr_day_"+model+"_"+str(y)+zero+str(m)+"_r1i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
                 if model == "FLOR":
@@ -258,8 +254,8 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, ensNr = 1, di
                     print ncFile
                     print lagToDateStr(startDate, lag)
                     print endDate
-                    tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag), endDay = endDate, model=model)
-            data[lastEntry,:,:] = aggregateTime(ensembleMean(tempData))
+                    #tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag), endDay = endDate, model=model)
+            #data[lastEntry,:,:] = aggregateTime(ensembleMean(tempData))
             lastEntry += 1
     return(data)
 
