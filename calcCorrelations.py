@@ -17,6 +17,7 @@ inputMonth = np.tile(np.repeat(["01","02","03","04","05","06","07","08","09","10
 varNames = ["correlation_0","signif_0", "correlation_1","signif_1", "correlation_2","signif_2", "correlation_3","signif_3", "correlation_4","signif_4", "correlation_5","signif_5", "correlation_6","signif_6", "correlation_7","signif_7", "correlation_8","signif_8"]
 varUnits = ["-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-"]
 createNetCDF(ncOutputFile, varNames, varUnits, np.arange(-89.5,90), np.arange(0.5,360), loop=True)
+posCount = 0
 
 for event in range(0,end,step):
     dateInput = "1981-"+inputMonth[event]+"-"+startDays[event]
@@ -28,7 +29,7 @@ for event in range(0,end,step):
     varName = "pr"
     dirLoc = "../output1.NOAA-GFDL.FLORB-01.day.atmos/"
     
-    NMME = returnSeasonalForecast(dateInput, endDay, model, varName, lag, dirLoc = dirLoc, ensNr = 12) * 86400.* 1000.
+    NMME = returnSeasonalForecast(dateInput, endDay, model, varName, lag, dirLoc = dirLoc, ensNr = 12) * 86400.
 
     ncFile = "../prec.nc"
     varName = "prec"
@@ -47,12 +48,17 @@ for event in range(0,end,step):
 
         for i in range(180):
           for j in range(360):
-            out = spearmanr(spacePGF[:,i,j], spaceNMME[:,i,j])
+            try:
+                out = spearmanr(spacePGF[:,i,j], spaceNMME[:,i,j])
+            except:
+                out = np.ones(2)
+                out[0] = 0
             corMap[i,j] = out[0]
             signMap[i,j] = out[1]
 
-        data2NetCDF(ncOutputFile, "correlation_"+str(space), corMap, lagToDateTime(dateInput, lag), posCnt=event)
-        data2NetCDF(ncOutputFile, "signif_"+str(space), signMap, lagToDateTime(dateInput, lag), posCnt=event)
+        data2NetCDF(ncOutputFile, "correlation_"+str(space), corMap, lagToDateTime(dateInput, 0), posCnt = posCount)
+        data2NetCDF(ncOutputFile, "signif_"+str(space), signMap, lagToDateTime(dateInput, 0), posCnt = posCount)
+    posCount += 1
 
 #corMap[signMap > 0.05] = 0.0
 
