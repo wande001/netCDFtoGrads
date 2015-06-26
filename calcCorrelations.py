@@ -8,8 +8,27 @@ step = int(sys.argv[2])
 end = int(sys.argv[3])
 month = int(sys.argv[4])
 tempScale = int(sys.argv[1])
+model = sys.argv[6]
+varName = sys.argv[7]
+ref = sys.argv[8]
+varNameRef = sys.argv[9]
 
-ncOutputFile = "../FLOR_tempScale_"+str(tempScale)+"_lag_"+str(lag)+".nc"
+if model == "CanCM3":
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/CanCM3/"
+    ensNr = 10
+    factor = 86400.
+if model == "CanCM4":
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/CanCM4/"
+    ensNr = 10
+    factor = 86400.
+if ref == "PGF" and varNameRef == "prec":
+    ncRef = "../refData/prec_PGF.nc"
+    refFactor = 1.
+if ref == "CFS" and varNameRef == "prec":
+    ncRef = "../refData/prec_CFS.nc"
+    refFactor = 24.
+
+ncOutputFile = "../resultsNetCDF/"+model+"_"+ref+"_tempScale_"+str(tempScale)+"_lag_"+str(lag)+".nc"
 
 startDays = np.tile(["01","16"],24)
 endDays = np.tile(["15","31","15","28","15","31","15","30","15","31","15","30","15","31","15","31","15","30","15","31","15","30","15","31"],2)
@@ -21,22 +40,15 @@ posCount = 0
 
 for event in range(0,end,step):
     dateInput = "1981-"+inputMonth[event]+"-"+startDays[event]
-    endDay = "1987-"+inputMonth[event+month-1]+"-"+endDays[event+month-1]
+    endDay = "2011-"+inputMonth[event+month-1]+"-"+endDays[event+month-1]
     print dateInput
     print endDay
     
-    model = "FLOR"
-    varName = "pr"
-    dirLoc = "../output1.NOAA-GFDL.FLORB-01.day.atmos/"
-    
-    NMME = returnSeasonalForecast(dateInput, endDay, model, varName, lag, dirLoc = dirLoc, ensNr = 12) * 86400.
+    NMME = returnSeasonalForecast(dateInput, endDay, model, varName, lag, dirLoc = dirLoc, ensNr = ensNr) * factor
 
-    ncFile = "../prec.nc"
-    varName = "prec"
-    
     print lagToDateStr(dateInput, lag)
     print lagToDateStr(endDay, lag)
-    dataPGF = readForcing(ncFile, varName, lagToDateStr(dateInput, lag), endDay=lagToDateStr(endDay, lag), lag=lag, model="PGF")
+    dataPGF = readForcing(ncRef, varNameRef, lagToDateStr(dateInput, lag), endDay=lagToDateStr(endDay, lag), lag=lag, model=ref) * refFactor
 
     for space in range(9):
         print space
@@ -59,7 +71,7 @@ for event in range(0,end,step):
         data2NetCDF(ncOutputFile, "correlation_"+str(space), corMap, lagToDateTime(dateInput, 0), posCnt = posCount)
         data2NetCDF(ncOutputFile, "signif_"+str(space), signMap, lagToDateTime(dateInput, 0), posCnt = posCount)
     posCount += 1
-
+    filecache = None
 #corMap[signMap > 0.05] = 0.0
 
 #plotMatrix(corMap)
