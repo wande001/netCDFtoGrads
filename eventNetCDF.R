@@ -75,7 +75,6 @@ for(lag in 0:11){
 
 close.ncdf(nc)
 
-}}}
 
 CCevents = array(0,c(360, 180, 12))
 count = 0
@@ -115,7 +114,6 @@ for(temp in 0:12){
 
 close.ncdf(nc)
 
-}}}
 
 CCevents = array(0,c(360, 180, 12))
 count = 0
