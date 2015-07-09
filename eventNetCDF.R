@@ -106,7 +106,7 @@ for(temp in 0:12){
     }
     close.ncdf(NC)
   }
-  put.var.ncdf(nc, PPM[[lag+13]], CCevents/(count/12))
+  put.var.ncdf(nc, PPM[[temp+13]], CCevents/(count/12))
   print(count)
   CCevents = array(0,c(360, 180, 12))
   count = 0
@@ -146,7 +146,7 @@ for(spat in 0:8){
     }
     close.ncdf(NC)
   }
-  put.var.ncdf(nc, PPM[[lag+26]], CCevents/(count/12))
+  put.var.ncdf(nc, PPM[[spat+26]], CCevents/(count/12))
   print(count)
   CCevents = array(0,c(360, 180, 12))
   count = 0
