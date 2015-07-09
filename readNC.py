@@ -2,6 +2,7 @@ import netCDF4 as nc
 import datetime
 
 import numpy as np
+import numpy.random as random
 import grads
 
 # Global variables:
@@ -62,14 +63,12 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
         # time index (in the netCDF file)
         nctime = f.variables['time']  # A netCDF time variable object.
         if model == "FLOR":
-            print int(np.where(nctime[:] == int(dateDif.days)+0.5)[0])
-            print deltaDays.days
-            print nctime[:]
-            print int(np.where(nctime[:] == int(deltaDays.days)-0.5)[0])
+            #print int(np.where(nctime[:] == int(dateDif.days)+0.5)[0])
+            #print deltaDays.days
+            #print nctime[:]
+            #print int(np.where(nctime[:] == int(deltaDays.days)-0.5)[0])
             idx = range(int(np.where(nctime[:] == int(dateDif.days)+0.5)[0]), int(np.where(nctime[:] == int(deltaDays.days)-0.5)[0])+1)
         else:
-            print int(dateDif.days)
-            print int(deltaDays.days)-1
             idx = range(int(np.where(nctime[:] == int(dateDif.days))[0]), int(np.where(nctime[:] == int(deltaDays.days)-1)[0])+1)
     else:
         if isinstance(date, str) == True:
@@ -383,3 +382,43 @@ def readForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF"):
             data[lastEntry,:,:] = aggregateTime(readNC(ncFile, varName, lagToDateStr(startDate, lag, model), endDay=endDate, model="PGF"))
             lastEntry += 1
     return(data)
+
+
+def readRandomForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF", ensNr = 10):
+    deltaDay = lagToDateTime(endDay, lag, model).day - lagToDateTime(dateInput, lag, model).day + 1
+    deltaYear = lagToDateTime(endDay, lag, model).year - lagToDateTime(dateInput, lag, model).year + 1
+    data = np.zeros((deltaYear,180,360))
+    print data.shape
+    start = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
+    end = datetime.datetime.strptime(str(endDay),'%Y-%m-%d')
+    lastEntry = 0
+    m = start.month
+    yearS = range(start.year, end.year+1)
+    for y in range(start.year, end.year+1):
+        realY = y
+        tempYears = np.delete(yearS, realY-yearS[0])
+        randomYears = random.choice(tempYears, ensNr, replace=False)
+        tempData = np.zeros((ensNr, 180,360))
+        for ens in range(ensNr):
+            y = randomYears[ens]
+            tempStartDate = datetime.datetime.strptime(str(str(y)+"-"+str(m)+"-01"),'%Y-%m-%d')
+            zero = ""
+            if len(str(m)) < 2: zero = "0"
+            zeroDay = ""
+            if len(str(start.day)) < 2: zeroDay="0"
+            startDate = str(tempStartDate.year)+"-"+zero+str(tempStartDate.month)+"-"+zeroDay+str(start.day)
+            tempEnd = datetime.datetime.strptime(str(str(y+1)+"-"+str(m)+"-01"),'%Y-%m-%d') - datetime.timedelta (days = 1)
+            if tempStartDate >= start and tempStartDate < (end - datetime.timedelta (days = 1)):
+                startDateTime = lagToDateTime(startDate, lag, model)
+                endDateTime = lagToDateTime(findMonthEnd(y,end.month,end.day, model), lag, model)
+                addYear = 0
+                if endDateTime.year < startDateTime.year: addYear = 1
+                endDateTime = lagToDateTime(findMonthEnd(y+addYear,end.month,end.day, model), lag, model)
+                if endDateTime.month < startDateTime.month and endDateTime.year == startDateTime.year: addYear = 1
+                endDate = lagToDateStr(findMonthEnd(y+addYear, end.month, end.day, model), lag, model)
+                print lagToDateStr(startDate, lag, model)
+                tempData[ens,:,:] = aggregateTime(readNC(ncFile, varName, lagToDateStr(startDate, lag, model), endDay=endDate, model="PGF"))
+        data[lastEntry,:,:] = ensembleMean(tempData)
+        lastEntry += 1
+    return(data)
+
