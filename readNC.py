@@ -361,14 +361,16 @@ def readForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF"):
     end = datetime.datetime.strptime(str(endDay),'%Y-%m-%d')
     lastEntry = 0
     m = start.month
+    d = start.day
     for y in range(start.year, end.year+1):
-        tempStartDate = datetime.datetime.strptime(str(str(y)+"-"+str(m)+"-01"),'%Y-%m-%d')
+        tempStartDate = datetime.datetime.strptime(str(str(y)+"-"+str(m)+"-"+str(d)),'%Y-%m-%d')
         zero = ""
         if len(str(m)) < 2: zero = "0"
         zeroDay = ""
         if len(str(start.day)) < 2: zeroDay="0"
         startDate = str(tempStartDate.year)+"-"+zero+str(tempStartDate.month)+"-"+zeroDay+str(start.day)
         tempEnd = datetime.datetime.strptime(str(str(y+1)+"-"+str(m)+"-01"),'%Y-%m-%d') - datetime.timedelta (days = 1)
+        print tempStartDate
         if tempStartDate >= start and tempStartDate < (end - datetime.timedelta (days = 1)):
             startDateTime = lagToDateTime(startDate, lag, model)
             endDateTime = lagToDateTime(findMonthEnd(y,end.month,end.day, model), lag, model)
@@ -393,6 +395,7 @@ def readRandomForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF", en
     end = datetime.datetime.strptime(str(endDay),'%Y-%m-%d')
     lastEntry = 0
     m = start.month
+    d = start.day
     yearS = range(start.year, end.year+1)
     for y in range(start.year, end.year+1):
         realY = y
