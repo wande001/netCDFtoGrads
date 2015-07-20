@@ -1,8 +1,8 @@
 require(ncdf)
 
-modelS = c("CanCM3", "CanCM4", "FLOR")
-forcingS = c("PGF", "CFS")
-varNameS = c("prec", "tas")
+modelS = c("FLOR")
+forcingS = c("CFS")
+varNameS = c("prec")
 lim = 0.05
 Rlim = 0.0
 
@@ -72,7 +72,10 @@ for(lag in 0:11){
   CCevents = array(0,c(360, 180, 12))
   count = 0
 }
-
+rm(CCevents)
+rm(R)
+rm(sign)
+rm(out)
 
 CCevents = array(0,c(360, 180, 12))
 count = 0
@@ -104,12 +107,16 @@ for(temp in 0:12){
     }
     close.ncdf(NC)
   }
-  put.var.ncdf(nc, PPM[[lag+13]], CCevents/(count/12))
+  put.var.ncdf(nc, PPM[[temp+13]], CCevents/(count/12))
   print(count)
   CCevents = array(0,c(360, 180, 12))
   count = 0
 }
 
+rm(CCevents)
+rm(R)
+rm(sign)
+rm(out)
 
 CCevents = array(0,c(360, 180, 12))
 count = 0
@@ -139,14 +146,19 @@ for(spat in 0:8){
           CCevents[,,time] = CCevents[,,time] + out
         }
       }
+      close.ncdf(NC)
     }
-    close.ncdf(NC)
   }
-  put.var.ncdf(nc, PPM[[lag+26]], CCevents/(count/12))
+  put.var.ncdf(nc, PPM[[spat+26]], CCevents/(count/12))
   print(count)
   CCevents = array(0,c(360, 180, 12))
   count = 0
 }
+
+rm(CCevents)
+rm(R)
+rm(sign)
+rm(out)
 
 close.ncdf(nc)
 
