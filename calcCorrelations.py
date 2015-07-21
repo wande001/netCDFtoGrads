@@ -14,41 +14,41 @@ ref = sys.argv[8]
 varNameRef = sys.argv[9]
 
 if model == "CanCM3":
-    dirLoc = "/tigress/nwanders/Scripts/Seasonal/CanCM3/"
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/CanCM3_org/"
     ensNr = 10
     if varName == "tas":
         factor = 1.
     else:
         factor = 86400.*1000.
 if model == "CanCM4":
-    dirLoc = "/tigress/nwanders/Scripts/Seasonal/CanCM4/"
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/CanCM4_org/"
     ensNr = 10
     if varName == "tas":
         factor = 1.
     else:
         factor = 86400.*1000.
 if model == "FLOR":
-    dirLoc = "/tigress/nwanders/Scripts/Seasonal/FLOR/"
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/FLOR_org/"
     ensNr = 12
     if varName == "tas":
         factor = 1.
     else:
         factor = 86400.*1000.
 if ref == "PGF" and varNameRef == "prec":
-    ncRef = "../refData/prec_PGF.nc"
+    ncRef = "../refData/prec_PGF_PCR.nc4"
     refFactor = 1.
 if ref == "CFS" and varNameRef == "prec":
-    ncRef = "../refData/prec_CFS.nc"
+    ncRef = "../refData/prec_CFS_PCR.nc4"
     refFactor = 24.
 if ref == "PGF" and varNameRef == "tas":
-    ncRef = "../refData/tas_PGF.nc"
+    ncRef = "../refData/tas_PGF_PCR.nc4"
     refFactor = 1.
 if ref == "CFS" and varNameRef == "tas":
-    ncRef = "../refData/tas_CFS.nc"
+    ncRef = "../refData/tas_CFS_PCR.nc4"
     refFactor = 1.
 
 
-ncOutputFile = "../resultsNetCDF/"+model+"_"+ref+"_"+varNameRef+"_tempScale_"+str(tempScale)+"_lag_"+str(lag)+".nc"
+ncOutputFile = "../resultsNetCDF/"+model+"_"+ref+"_"+varNameRef+"_tempScale_"+str(tempScale)+"_lag_"+str(lag)+".nc4"
 
 startDays = np.tile(["01","16"],24)
 endDays = np.tile(["15","31","15","28","15","31","15","30","15","31","15","30","15","31","15","31","15","30","15","31","15","30","15","31"],2)
