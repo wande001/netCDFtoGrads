@@ -3,15 +3,15 @@ from readNC import *
 from scipy.stats.stats import percentileofscore
 import sys
 
-lag = 0 #int(sys.argv[5])
-step = 2 #int(sys.argv[2])
-end = 24 #int(sys.argv[3])
-month = 2 #int(sys.argv[4])
-tempScale = 1 #int(sys.argv[1])
-model = "CanCM3" #sys.argv[6]
-varName = "tas" #sys.argv[7]
-ref = "PGF" #sys.argv[8]
-varNameRef = "tas" #sys.argv[9]
+lag = int(sys.argv[5])
+step = int(sys.argv[2])
+end = int(sys.argv[3])
+month = int(sys.argv[4])
+tempScale = int(sys.argv[1])
+model = sys.argv[6]
+varName = sys.argv[7]
+ref = sys.argv[8]
+varNameRef = sys.argv[9]
 
 if model == "CanCM3":
     dirLoc = "/tigress/nwanders/Scripts/Seasonal/CanCM3_org/"
@@ -62,7 +62,6 @@ inputMonth = np.tile(np.repeat(["01","02","03","04","05","06","07","08","09","10
 inputYear = np.repeat(["2011","2012"],24)
 varNames = ["uncorrected", "corrected"]
 varUnits = ["-","-"]
-createNetCDF(ncOutputFile, varNames, varUnits, np.arange(-89.5,90), np.arange(-179.5,180), loop=True)
 
 yearStep = 12
 ncYears = np.repeat(range(1981,2012),12)
@@ -74,8 +73,9 @@ if tempScale == 0:
   ncMonths = np.tile(np.repeat(["01","02","03","04","05","06","07","08","09","10","11","12"],2),31)
   ncDays = np.tile(["01","16"],12*31)
 
-unCorMap = np.zeros((31*yearStep,180,360))
-corMap = np.zeros((31*yearStep,180,360))
+yearS = int(inputYear[0]) - 1981 + 1
+unCorMap = np.zeros((yearS*yearStep,180,360))
+corMap = np.zeros((yearS*yearStep,180,360))
 
 dayStep = 0
 for event in range(0,end,step):
@@ -87,7 +87,10 @@ for event in range(0,end,step):
     print lagToDateStr(dateInput, lag, model)
     print lagToDateStr(endDay, lag, model)
     dataPGF = readForcing(ncRef, varNameRef, dateInput, endDay=endDay, lag=lag, model=ref) * refFactor
-    for year in range(NMME.shape[0]):
+    if event == 0:
+      unCorMap = np.zeros((NMME.shape[0]*yearStep,180,360))
+      corMap = np.zeros((NMME.shape[0]*yearStep,180,360))
+    for year in range(yearS):
       sortCDF = np.sort(NMME[year,:,:,:], axis=0)
       corSortCDF = np.sort(NMME[year,:,:,:] - np.mean(np.mean(NMME[:,:,:,:], axis=0), axis=0))
       out = np.zeros((180,360))
@@ -97,6 +100,9 @@ for event in range(0,end,step):
         out[temp] = (n+1)/float(ensNr)
         temp = dataPGF[year,:,:] > corSortCDF[n,:,:]
         outBias[temp] = (n+1)/ensNr
+      print unCorMap.shape
+      print out.shape
+      print year*yearStep+dayStep
       unCorMap[year*yearStep+dayStep,:,:] = out
       corMap[year*yearStep+dayStep,:,:] = outBias
     filecache = None
@@ -104,8 +110,9 @@ for event in range(0,end,step):
     del(NMME)
     del(dataPGF)
 
+createNetCDF(ncOutputFile, varNames, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180), loop=True)
 posCount = 0
-for time in range(31*yearStep):
+for time in range(yearS*yearStep):
   ncDate = datetime.datetime(ncYears[time],int(ncMonths[time]),int(ncDays[time]))
   data2NetCDF(ncOutputFile, "uncorrected", unCorMap[time,:,:], ncDate, posCnt = posCount)
   data2NetCDF(ncOutputFile, "corrected", corMap[time,:,:], ncDate, posCnt = posCount)

@@ -12,25 +12,25 @@ cd /tigress/nwanders/Scripts/Seasonal/netCDFtoGrads\n"
 
 runs = list()
 
-runs[[1]] ="python calcCorrelations.py 0 1 24 1 $lag $model $varName $ref $varRef"
-runs[[2]] = "python calcCorrelations.py 1 2 24 2 $lag $model $varName $ref $varRef"
-runs[[3]] = "python calcCorrelations.py 2 2 24 4 $lag $model $varName $ref $varRef"
-runs[[4]] = "python calcCorrelations.py 3 2 24 6 $lag $model $varName $ref $varRef"
-runs[[5]] = "python calcCorrelations.py 4 2 24 8 $lag $model $varName $ref $varRef"
-runs[[6]] = "python calcCorrelations.py 5 2 24 10 $lag $model $varName $ref $varRef"
-runs[[7]] = "python calcCorrelations.py 6 2 24 12 $lag $model $varName $ref $varRef"
-runs[[8]] = "python calcCorrelations.py 7 2 24 14 $lag $model $varName $ref $varRef"
-runs[[9]] = "python calcCorrelations.py 8 2 24 16 $lag $model $varName $ref $varRef"
-runs[[10]] = "python calcCorrelations.py 9 2 24 18 $lag $model $varName $ref $varRef"
-runs[[11]] = "python calcCorrelations.py 10 2 24 20 $lag $model $varName $ref $varRef"
-runs[[12]] = "python calcCorrelations.py 11 2 24 22 $lag $model $varName $ref $varRef"
-runs[[13]] = "python calcCorrelations.py 12 2 24 24 $lag $model $varName $ref $varRef"
+runs[[1]] ="python calcQuantiles.py 0 1 24 1 $lag $model $varName $ref $varRef"
+runs[[2]] = "python calcQuantiles.py 1 2 24 2 $lag $model $varName $ref $varRef"
+runs[[3]] = "python calcQuantiles.py 2 2 24 4 $lag $model $varName $ref $varRef"
+runs[[4]] = "python calcQuantiles.py 3 2 24 6 $lag $model $varName $ref $varRef"
+runs[[5]] = "python calcQuantiles.py 4 2 24 8 $lag $model $varName $ref $varRef"
+runs[[6]] = "python calcQuantiles.py 5 2 24 10 $lag $model $varName $ref $varRef"
+runs[[7]] = "python calcQuantiles.py 6 2 24 12 $lag $model $varName $ref $varRef"
+runs[[8]] = "python calcQuantiles.py 7 2 24 14 $lag $model $varName $ref $varRef"
+runs[[9]] = "python calcQuantiles.py 8 2 24 16 $lag $model $varName $ref $varRef"
+runs[[10]] = "python calcQuantiles.py 9 2 24 18 $lag $model $varName $ref $varRef"
+runs[[11]] = "python calcQuantiles.py 10 2 24 20 $lag $model $varName $ref $varRef"
+runs[[12]] = "python calcQuantiles.py 11 2 24 22 $lag $model $varName $ref $varRef"
+runs[[13]] = "python calcQuantiles.py 12 2 24 24 $lag $model $varName $ref $varRef"
 
-modelS = c("FLOR")
-varNameS = c("tas")
+modelS = c("CanCM3","CanCM4","FLOR")
+varNameS = c("prlr","prlr","pr")
 refS = c("PGF","CFS")
-varRefS = "tas"
-lagS = c(0:11)
+varRefS = "prec"
+lagS = c(0)
 
 jobDir = "../jobs/"
 
@@ -47,7 +47,6 @@ for(m in 1:length(modelS)){
         write.table(setting, paste(jobDir,model,"_",varName,"_",ref,"_",lag,".sh",sep=""), col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE)
         write.table(runs[[1]], paste(jobDir,model,"_",varName,"_",ref,"_",lag,".sh",sep=""), col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE)
         for(i in 2:(13-lag)){
-        #for(i in 3:4){
           write.table(runs[[i]], paste(jobDir,model,"_",varName,"_",ref,"_",lag,".sh",sep=""), col.names=FALSE, row.names=FALSE, quote=FALSE, append=TRUE)
         }
         master = paste(master,"sbatch ", paste(jobDir,model,"_",varName,"_",ref,"_",lag,".sh\n",sep=""),sep="")

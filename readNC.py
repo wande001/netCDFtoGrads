@@ -279,7 +279,7 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
                 if model == "FLOR":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
-                    ncFile = dirLoc+varName+"_day_GFDL-FLORB01_FLORB01-P1-ECDA-v3.1-"+zero+str(m)+str(y)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc"
+                    ncFile = dirLoc+varName+"_day_GFDL-FLORB01_FLORB01-P1-ECDA-v3.1-"+zero+str(m)+str(y)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
                     print ncFile
                     print lagToDateStr(startDate, lag, model)
                     print endDate
@@ -474,7 +474,7 @@ def returnSeasonalEnsembleForecast(dateInput, endDay, model, varName, lag, month
                 if model == "FLOR":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
-                    ncFile = dirLoc+varName+"_day_GFDL-FLORB01_FLORB01-P1-ECDA-v3.1-"+zero+str(m)+str(y)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc"
+                    ncFile = dirLoc+varName+"_day_GFDL-FLORB01_FLORB01-P1-ECDA-v3.1-"+zero+str(m)+str(y)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
                     print ncFile
                     print lagToDateStr(startDate, lag, model)
                     print endDate
