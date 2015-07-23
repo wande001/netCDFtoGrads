@@ -56,7 +56,8 @@ inputMonth = np.tile(np.repeat(["01","02","03","04","05","06","07","08","09","10
 inputYear = np.repeat(["2011","2012"],24)
 varNames = ["correlation_0","signif_0", "correlation_1","signif_1", "correlation_2","signif_2", "correlation_3","signif_3", "correlation_4","signif_4", "correlation_5","signif_5", "correlation_6","signif_6", "correlation_7","signif_7", "correlation_8","signif_8"]
 varUnits = ["-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-","-"]
-createNetCDF(ncOutputFile, varNames, varUnits, np.arange(-89.5,90), np.arange(0.5,360), loop=True)
+createNetCDF(ncOutputFile, varNames, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180), loop=True)
+
 posCount = 0
 
 for event in range(0,end,step):
