@@ -31,7 +31,7 @@ varCount = 0
 for(v in var){
   tel = 0
   varCount = varCount + 1
-  outPPM[[varCount]] = array(NA, c(24,12, length(models)*length(ref)))
+  outPPM[[varCount]] = array(NA, c(12,24, length(models)*length(ref)))
   for(m in models){
     for(r in ref){
       tel = tel + 1
@@ -41,7 +41,12 @@ for(v in var){
         for(time in 1:24){
           temp = data[,,time]
           temp[temp > 1] = NA
-          outPPM[[varCount]][time,lag+1,tel] = mean(temp, na.rm=T)
+          if(time/2 == floor(time/2)){
+            outPPM[[varCount]][time/2,(lag+1)*2,tel] = mean(temp, na.rm=T)
+          }
+          else{
+            outPPM[[varCount]][time,(lag*2+1),tel] = mean(temp, na.rm=T)
+          }
         }
       }
       close.ncdf(NC)
@@ -68,20 +73,20 @@ text(0.8, seq(0.5,5.5,1), c("NA","EU","AF","SA","AS","OC"))
 text(0.22, 3.0, "continent", srt=90, cex=1.5)
 
 
-lagLabel = c("CanCM3", "CanCM4", "FLOR")
+lagLabel = c("CanCM3","" ,"CanCM4","", "FLOR")
 for(i in seq(1,6,2)){
   par(mar=c(0,1,3,0))
-  ensPPM = rowMeans(outPPM[[1]][,,i:(i+1)], na.rm=T, dims=2)
-  image(x=seq(0.5,23.5,1), y=seq(0.5,11.5,1), ensPPM, xlab="", ylab="", col= cols, axes=FALSE, main=lagLabel[i], zlim=c(0.01,1))
-  abline(h=c(1:5), lty=2, col="grey")
+  ensPPM =rowMeans(outPPM[[1]][,,i:(i+1)], na.rm=T, dims=2)
+  image(y=seq(0.5,23.5,1), x=seq(0.5,11.5,1), ensPPM, xlab="", ylab="", col= cols, axes=FALSE, main=lagLabel[i], zlim=c(0.01,1))
+  abline(h=seq(2,22,2), lty=2, col="grey")
   box()
 }
 for(i in seq(1,6,2)){
   par(mar=c(2,1.0,1,0))
   ensPPM = rowMeans(outPPM[[2]][,,i:(i+1)], na.rm=T, dims=2)
-  image(x=seq(0.5,23.5,1), y=seq(0.5,11.5,1), ensPPM, xlab="", ylab="", col= cols, axes=FALSE, main=lagLabel[i], zlim=c(0.01,1))
-  axis(1, labels=c("J","F","M","A","M","J","J","A","S","O","N","D"), at=seq(1,23,2))
-  abline(h=c(1:5), lty=2, col="grey")
+  image(y=seq(0.5,23.5,1), x=seq(0.5,11.5,1), ensPPM, xlab="", ylab="", col= cols, axes=FALSE, main=lagLabel[i], zlim=c(0.01,1))
+  axis(1, labels=c("J","F","M","A","M","J","J","A","S","O","N","D"), at=seq(0.5,11.5,1))
+  abline(h=seq(2,22,2), lty=2, col="grey")
   box()
 }
 
