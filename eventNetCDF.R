@@ -35,7 +35,7 @@ for(i in 0:8){
   PPM[[i+26]] <- var.def.ncdf(paste("Space",i,sep="_"), "-", list(dimX, dimY, dimT), mv,prec="double")
 }
 
-nc <- create.ncdf(paste(model,"_",forcing,"_",varName,"_PPM.nc4",sep=""), PPM)
+nc <- create.ncdf(paste("../resultsNetCDF/",model,"_",forcing,"_",varName,"_PPM.nc4",sep=""), PPM)
 
 CCevents = array(0,c(360, 180, 12))
 count = 0

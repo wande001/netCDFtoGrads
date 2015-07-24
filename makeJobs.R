@@ -5,32 +5,33 @@ start = "#!/bin/bash
 # sends mail when process begins, and
 # when it ends. Make sure you define your email
 # address.
-#SBATCH --mail-type=end
-#SBATCH --mail-user=nwanders@princeton.edu
 
 cd /tigress/nwanders/Scripts/Seasonal/netCDFtoGrads\n"
 
+#SBATCH --mail-type=end
+#SBATCH --mail-user=nwanders@princeton.edu
+
 runs = list()
 
-runs[[1]] ="python calcQuantiles.py 0 1 24 1 $lag $model $varName $ref $varRef"
-runs[[2]] = "python calcQuantiles.py 1 2 24 2 $lag $model $varName $ref $varRef"
-runs[[3]] = "python calcQuantiles.py 2 2 24 4 $lag $model $varName $ref $varRef"
-runs[[4]] = "python calcQuantiles.py 3 2 24 6 $lag $model $varName $ref $varRef"
-runs[[5]] = "python calcQuantiles.py 4 2 24 8 $lag $model $varName $ref $varRef"
-runs[[6]] = "python calcQuantiles.py 5 2 24 10 $lag $model $varName $ref $varRef"
-runs[[7]] = "python calcQuantiles.py 6 2 24 12 $lag $model $varName $ref $varRef"
-runs[[8]] = "python calcQuantiles.py 7 2 24 14 $lag $model $varName $ref $varRef"
-runs[[9]] = "python calcQuantiles.py 8 2 24 16 $lag $model $varName $ref $varRef"
-runs[[10]] = "python calcQuantiles.py 9 2 24 18 $lag $model $varName $ref $varRef"
-runs[[11]] = "python calcQuantiles.py 10 2 24 20 $lag $model $varName $ref $varRef"
-runs[[12]] = "python calcQuantiles.py 11 2 24 22 $lag $model $varName $ref $varRef"
-runs[[13]] = "python calcQuantiles.py 12 2 24 24 $lag $model $varName $ref $varRef"
+runs[[1]] ="python calcCorrelations.py 0 1 24 1 $lag $model $varName $ref $varRef"
+runs[[2]] = "python calcCorrelations.py 1 2 24 2 $lag $model $varName $ref $varRef"
+runs[[3]] = "python calcCorrelations.py 2 2 24 4 $lag $model $varName $ref $varRef"
+runs[[4]] = "python calcCorrelations.py 3 2 24 6 $lag $model $varName $ref $varRef"
+runs[[5]] = "python calcCorrelations.py 4 2 24 8 $lag $model $varName $ref $varRef"
+runs[[6]] = "python calcCorrelations.py 5 2 24 10 $lag $model $varName $ref $varRef"
+runs[[7]] = "python calcCorrelations.py 6 2 24 12 $lag $model $varName $ref $varRef"
+runs[[8]] = "python calcCorrelations.py 7 2 24 14 $lag $model $varName $ref $varRef"
+runs[[9]] = "python calcCorrelations.py 8 2 24 16 $lag $model $varName $ref $varRef"
+runs[[10]] = "python calcCorrelations.py 9 2 24 18 $lag $model $varName $ref $varRef"
+runs[[11]] = "python calcCorrelations.py 10 2 24 20 $lag $model $varName $ref $varRef"
+runs[[12]] = "python calcCorrelations.py 11 2 24 22 $lag $model $varName $ref $varRef"
+runs[[13]] = "python calcCorrelations.py 12 2 24 24 $lag $model $varName $ref $varRef"
 
 modelS = c("CanCM3","CanCM4","FLOR")
-varNameS = c("prlr","prlr","pr")
+varNameS = c("tas","tas","tas")
 refS = c("PGF","CFS")
-varRefS = "prec"
-lagS = c(0)
+varRefS = "tas"
+lagS = c(0:11)
 
 jobDir = "../jobs/"
 
