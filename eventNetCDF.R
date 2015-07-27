@@ -1,8 +1,8 @@
 require(ncdf)
 
-modelS = c("FLOR")
-forcingS = c("CFS")
-varNameS = c("prec")
+modelS = c("CanCM3","CanCM4","FLOR")
+forcingS = c("CFS", "PGF")
+varNameS = c("prec", "tas")
 lim = 0.05
 Rlim = 0.0
 
