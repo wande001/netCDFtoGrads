@@ -45,7 +45,7 @@ for(v in var){
             outPPM[[varCount]][time/2,(lag+1)*2,tel] = mean(temp, na.rm=T)
           }
           else{
-            outPPM[[varCount]][time,(lag*2+1),tel] = mean(temp, na.rm=T)
+            outPPM[[varCount]][ceiling(time/2),(lag*2+1),tel] = mean(temp, na.rm=T)
           }
         }
       }
@@ -55,36 +55,40 @@ for(v in var){
   outPPM[[varCount]][outPPM[[varCount]] > 1] = NA
 }
 
-A = makeMatrix(2,3)
 
 pdf("../subSeasonPPM.pdf", width=10, height=4)
 
+A = makeMatrix(2,3)
 layout(A)
-cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))(100)
+
+lim = 0.05
+
+cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))((1-lim)*100)
+cols[1:(lim*100)] = "white"
 colLen = length(cols)
 par(mar=c(0,0,3,0))
-plot(1,1,type="n", xlim=c(0,1), ylim=c(0,6), xaxs="i", yaxs="i", axes=FALSE, ylab="", xlab="", main="")
-text(0.75, seq(0.5,5.5,1), c("NA","EU","AF","SA","AS","OC"))
-text(0.22, 3.0, "continent", srt=90, cex=1.5)
+plot(1,1,type="n", xlim=c(0,1), ylim=c(0,12), xaxs="i", yaxs="i", axes=FALSE, ylab="", xlab="", main="")
+text(0.85, seq(0.5,11.5,1), c(1:12))
+text(0.4, 6.0, "Lead time (months)", srt=90, cex=1.5)
 
 par(mar=c(2,0,1,0))
-plot(1,1,type="n", xlim=c(0,1), ylim=c(0,6), xaxs="i", yaxs="i", axes=FALSE, ylab="", xlab="", main="")
-text(0.8, seq(0.5,5.5,1), c("NA","EU","AF","SA","AS","OC"))
-text(0.22, 3.0, "continent", srt=90, cex=1.5)
+plot(1,1,type="n", xlim=c(0,1), ylim=c(0,12), xaxs="i", yaxs="i", axes=FALSE, ylab="", xlab="", main="")
+text(0.85, seq(0.5,11.5,1), c(1:12))
+text(0.4, 6.0, "Lead time (months)", srt=90, cex=1.5)
 
 
 lagLabel = c("CanCM3","" ,"CanCM4","", "FLOR")
 for(i in seq(1,6,2)){
   par(mar=c(0,1,3,0))
   ensPPM =rowMeans(outPPM[[1]][,,i:(i+1)], na.rm=T, dims=2)
-  image(y=seq(0.5,23.5,1), x=seq(0.5,11.5,1), ensPPM, xlab="", ylab="", col= cols, axes=FALSE, main=lagLabel[i], zlim=c(0.01,1))
+  image(y=seq(0.5,23.5,1), x=seq(0.5,11.5,1), ensPPM, xlab="", ylab="", col= cols, axes=FALSE, main=lagLabel[i], zlim=c(0.0,1))
   abline(h=seq(2,22,2), lty=2, col="grey")
   box()
 }
 for(i in seq(1,6,2)){
   par(mar=c(2,1.0,1,0))
   ensPPM = rowMeans(outPPM[[2]][,,i:(i+1)], na.rm=T, dims=2)
-  image(y=seq(0.5,23.5,1), x=seq(0.5,11.5,1), ensPPM, xlab="", ylab="", col= cols, axes=FALSE, main=lagLabel[i], zlim=c(0.01,1))
+  image(y=seq(0.5,23.5,1), x=seq(0.5,11.5,1), ensPPM, xlab="Forecast initialization", ylab="", col= cols, axes=FALSE, main="", zlim=c(0.0,1))
   axis(1, labels=c("J","F","M","A","M","J","J","A","S","O","N","D"), at=seq(0.5,11.5,1))
   abline(h=seq(2,22,2), lty=2, col="grey")
   box()
@@ -94,5 +98,6 @@ par(mar=c(1,1,3,3))
 plot(1,1,type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, ylab="", xlab="", main="PPM")
 axis(4, seq(0,1.0,0.1),seq(0,1.0,0.1), las=1)
 symbols(rep(0.5,colLen), seq(0,1,length=colLen), rectangles=matrix(rep(c(1,1/colLen),2*colLen),colLen,2, byrow=T), inches=F, add=T, fg=cols, bg=cols)
+box()
 
 dev.off()

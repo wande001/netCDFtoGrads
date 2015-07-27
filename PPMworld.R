@@ -44,11 +44,11 @@ for(lag in lagTimes){
       tel = 0
       for(r in ref){
         tel = tel + 1
-        NC = open.ncdf(paste(m,r,v,"PPM.nc", sep="_"))
+        NC = open.ncdf(paste(m,r,v,"PPM.nc4", sep="_"))
         data = get.var.ncdf(NC, paste("Lead",lag, sep="_"))
         close.ncdf(NC)
         temp = rowMeans(data[,,], dims=2)
-        outPPM[[varCount]][,,tel] = mapFlip(temp)
+        outPPM[[varCount]][,,tel] = temp #mapFlip(temp)
       }
       ensMean = ensMean + rowMeans(outPPM[[varCount]], na.rm=T, dims=2)
     }
