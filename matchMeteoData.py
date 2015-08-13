@@ -87,7 +87,8 @@ def netcdf2PCRobjClone(ncFile,varName,dateInput,\
                        useDoy = None,
                        cloneMapFileName  = None,\
                        LatitudeLongitude = True,\
-                       specificFillValue = None):
+                       specificFillValue = None,\
+                       allData = False):
     # 
     # EHS (19 APR 2013): To convert netCDF (tss) file to PCR file.
     # --- with clone checking
@@ -164,11 +165,15 @@ def netcdf2PCRobjClone(ncFile,varName,dateInput,\
                         msg += "No "+str(dateInput)+" is available. The 'leapyear' option is used while selecting netcdf time."
                         msg += "\n"                                 
                 print msg               
-    idx = int(idx)                                                  
-    cropData = f.variables[varName][int(idx),:,:]       # still original data
+    idx = int(idx)
+    if allData:
+      cropData = f.variables[varName]
+    else:
+      cropData = f.variables[varName][int(idx),:,:]       # still original data
     f = None 
     # PCRaster object
     return (cropData)
+
 
 def getNetCDFTime(ncFile):    
     
@@ -234,7 +239,7 @@ def matchCDF(data, orgDataCDF, refDataCDF, var="prec"):
         lowData = minVal + (out[selVal] - p) * (maxVal - minVal)
         highData = minVal + ((p+1) - out[selVal]) * (maxVal - minVal)
         transData[selVal] = (lowData + highData)/2
-        if p == 0 and var == "prec":
+        if p == 0 and (var == "prec" or var == "prlr"):
             randomRainChance = np.maximum(nonZeroOrg - nonZeroRef,0.0)/np.maximum(nonZeroOrg, 1e-10)
             randomRainChance[randomRainChance >= 0.99999] = 2
             randomRain = (np.random.random((nx,ny)) - (1-randomRainChance)) / np.maximum(randomRainChance, 1e-10)
@@ -243,8 +248,7 @@ def matchCDF(data, orgDataCDF, refDataCDF, var="prec"):
             rainPercentile = (nonZeroRef-0.001) + np.ceil((nonZeroOrg - nonZeroRef) * randomRain)
             out[selVal] = rainPercentile[selVal]
     
-    outPCRdata = transData
-    return(outPCRdata)
+    return(transData)
 
 
 def netcdf2PCRobjCloneMultiDim(ncFile,varName,dateInput,\
@@ -337,12 +341,18 @@ def netcdf2PCRobjCloneMultiDim(ncFile,varName,dateInput,\
 
 model = sys.argv[1]
 ref = sys.argv[2]
+year = sys.argv[3]
+month = sys.argv[4]
+
+zero = ""
+if len(month) < 2:
+  zero = "0"
 
 varUnits = "degree C"
 
 inputDir = model
 outputDir = model+"_"+ref
-files = os.listdir(inputDir)
+files = glob.glob(inputDir+"/*"+year+zero+month+"01*")
 files.sort()
 
 for f in files:
@@ -353,25 +363,27 @@ for f in files:
     varNames = f.split('_')[0]
     if varNames == "tas":
       varUnits = "degree C"
+      refVar = "tas"
     else:
       varUnits = "m/d"
+      refVar = "prec"
     print varNames
     print varUnits
-    createNetCDF(outputDir+"/"+f, varNames, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180))
+    createNetCDF(outputDir+"/"+f, refVar, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180))
     fileLen = 365
     if (year/4. == np.floor(year/4.) and month <= 2) or \
       ((year+1)/4. == np.floor((year+1)/4.) and month >= 3):
       fileLen = 366
+    if model != "FLOR":
+      tempData = netcdf2PCRobjClone(model+"/"+f, varNames, datetime.datetime(year, month, 1), allData=True)
+    else:
+      tempData = netcdf2PCRobjClone(model+"/"+f, varNames, t+1, useDoy="Yes", allData=True)    
     for t in range(fileLen):
       dateInput = datetime.datetime(year, month, 1)+datetime.timedelta(days=t)
       print dateInput
       if dateInput.day == 1:
-        refCDF = netcdf2PCRobjCloneMultiDim("resultsNetCDF/"+ref+"_prec_pctl.nc4", "prec", dateInput, useDoy = 'month')
+        refCDF = netcdf2PCRobjCloneMultiDim("resultsNetCDF/"+ref+"_"+refVar+"_pctl.nc4", refVar, dateInput, useDoy = 'month')
         orgCDF = netcdf2PCRobjCloneMultiDim("resultsNetCDF/"+model+"_"+varNames+"_pctl.nc4", varNames, dateInput, useDoy = 'month')
-      if model != "FLOR":
-        tempData = netcdf2PCRobjClone(model+"/"+f, varNames, dateInput)
-      else:
-        tempData = netcdf2PCRobjClone(model+"/"+f, varNames, t+1, useDoy="Yes")
-      matchData = matchCDF(tempData, orgCDF, refCDF)
-      data2NetCDF(outputDir+"/"+f, varNames, matchData, dateInput, posCnt = t)
+      matchData = matchCDF(tempData[t,:,:], orgCDF, refCDF, var=varNames)
+      data2NetCDF(outputDir+"/"+f, refVar, matchData, dateInput, posCnt = t)
 
