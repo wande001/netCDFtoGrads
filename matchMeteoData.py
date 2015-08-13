@@ -219,7 +219,7 @@ def matchCDF(data, orgDataCDF, refDataCDF, var="prec"):
     upInt = highDif+1e-05 < lowDif
     lowInt = highDif > lowDif+1e-05
     out = optVal
-    out[upInt] = optVal[upInt] + optDif[upInt]/(highDif[upInt] + optDif[upInt])
+    out[upInt] = optVal[upInt] + optDif[upInt]/np.maximum(highDif[upInt] + optDif[upInt], 1e-10)
     out[lowInt] = optVal[lowInt] - optDif[lowInt]/np.maximum(lowDif[lowInt] + optDif[lowInt], 1e-10)
     out = out/(orgMax-1.)
     out[out < 0.0] = 0.0
@@ -338,20 +338,25 @@ def netcdf2PCRobjCloneMultiDim(ncFile,varName,dateInput,\
 model = sys.argv[1]
 ref = sys.argv[2]
 
-varNames = 'prec'
-if model == 'CanCM3' or model == 'CanCM4':
-  varNames = 'prlr'
-varUnits = "m/d"
+varUnits = "degree C"
 
 inputDir = model
 outputDir = model+"_"+ref
 files = os.listdir(inputDir)
+files.sort()
 
-for f in files[0:1]:
+for f in files:
   if f.split('.')[-1] == 'nc4':
     print f
     year = int(f.split('-')[-2][-8:-4])
     month = int(f.split('-')[-2][-4:-2])
+    varNames = f.split('_')[0]
+    if varNames == "tas":
+      varUnits = "degree C"
+    else:
+      varUnits = "m/d"
+    print varNames
+    print varUnits
     createNetCDF(outputDir+"/"+f, varNames, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180))
     fileLen = 365
     if (year/4. == np.floor(year/4.) and month <= 2) or \
@@ -362,8 +367,11 @@ for f in files[0:1]:
       print dateInput
       if dateInput.day == 1:
         refCDF = netcdf2PCRobjCloneMultiDim("resultsNetCDF/"+ref+"_prec_pctl.nc4", "prec", dateInput, useDoy = 'month')
-        orgCDF = netcdf2PCRobjCloneMultiDim("resultsNetCDF/"+model+"_prlr_pctl.nc4", varNames, dateInput, useDoy = 'month')
-      tempData = netcdf2PCRobjClone("CanCM3/"+f, varNames, dateInput)
+        orgCDF = netcdf2PCRobjCloneMultiDim("resultsNetCDF/"+model+"_"+varNames+"_pctl.nc4", varNames, dateInput, useDoy = 'month')
+      if model != "FLOR":
+        tempData = netcdf2PCRobjClone(model+"/"+f, varNames, dateInput)
+      else:
+        tempData = netcdf2PCRobjClone(model+"/"+f, varNames, t+1, useDoy="Yes")
       matchData = matchCDF(tempData, orgCDF, refCDF)
       data2NetCDF(outputDir+"/"+f, varNames, matchData, dateInput, posCnt = t)
 
