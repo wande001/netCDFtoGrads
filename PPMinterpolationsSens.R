@@ -57,7 +57,7 @@ for(v in var){
   for(m in models){
     for(r in ref){
       tel = tel + 1
-      NC = open.ncdf(paste(m,r,v,"PPM_matrix.nc4", sep="_"))
+      NC = open.ncdf(paste(m,r,v,"PPM_matrix_highLim.nc4", sep="_"))
       varTel = 0
       for(lag in 0:11){
         for(time in 0:(12-lag)){
@@ -76,7 +76,7 @@ for(v in var){
   }
 }
 
-pdf("../matrixPPM.pdf", width=10, height=4)
+pdf("../matrixPPM_highLim.pdf", width=10, height=4)
 
 colLen =100
 cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))(colLen)
@@ -141,7 +141,7 @@ symbols(rep(0.5,colLen), seq(0,1,length=colLen), rectangles=matrix(rep(c(1,1/col
 
 dev.off()
 
-pdf("../matrixPPM_model.pdf", width=6, height=4)
+pdf("../matrixPPM_model_highLim.pdf", width=6, height=4)
 
 colLen =100
 cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))(colLen)
@@ -196,7 +196,7 @@ symbols(rep(0.5,colLen), seq(0,1,length=colLen), rectangles=matrix(rep(c(1,1/col
 
 dev.off()
 
-pdf("../matrixPPM_model_continent.pdf", width=10, height=4)
+pdf("../matrixPPM_model_continent_highLim.pdf", width=10, height=4)
 
 colLen =100
 cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))(colLen)
@@ -263,7 +263,7 @@ for(mod in seq(1,5,2)){
   
 dev.off()
 
-pdf("../matrixPPM_bestPerformance.pdf", width=10, height=4)
+pdf("../matrixPPM_bestPerformance_highLims.pdf", width=10, height=4)
 
 colLen =100
 cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))(colLen)

@@ -1,6 +1,15 @@
 require(ncdf)
 require(fields)
 
+mapFlip <- function(map){
+  temp = matrix(NA, dim(map)[1], dim(map)[2])
+  half = dim(map)[1]/2
+  end = dim(map)[1]
+  temp[1:half,]=map[(half+1):end,]
+  temp[(half+1):end,]=map[1:half,]
+  return(temp)
+}
+
 makeMatrix <- function(rows, cols, size=5, legendSize = 2, labelSize = 1){
   A = matrix(rows*cols+3, rows*size, cols*size+legendSize+labelSize)
   A[1:size,1:labelSize] = 1
@@ -24,6 +33,7 @@ continent[continent < 1] = NA
 continent[continent > 2 & continent < 3] = NA
 continent[continent > 3 & continent < 4] = NA
 continent[continent > 4 & continent < 5] = NA
+continent = mapFlip(continent)
 
 outPPM = list()
 
@@ -36,7 +46,7 @@ for(lag in c(0:3,6)){
     for(m in models){
       for(r in ref){
         tel = tel + 1
-        NC = open.ncdf(paste(m,r,v,"PPM.nc", sep="_"))
+        NC = open.ncdf(paste(m,r,v,"PPM.nc4", sep="_"))
         data = get.var.ncdf(NC, paste("Lead",lag, sep="_"))
         close.ncdf(NC)
         for(time in 1:12){

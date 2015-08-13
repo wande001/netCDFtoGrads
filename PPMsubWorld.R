@@ -22,9 +22,9 @@ makeMatrix <- function(rows, cols, size=5, legendSize = 2, labelSize = 1){
 }
 
 models = c("CanCM3", "CanCM4", "FLOR")
-var = c("tas")
+var = c("prec")
 ref = c("CFS", "PGF")
-lagTimes = c(0:3,6)
+lagTimes = c(0.1,0.6,1.1,1.6,2.6)
 
 continentNC = open.ncdf("../continents.nc")
 continent = get.var.ncdf(continentNC, "con")
@@ -44,11 +44,11 @@ for(lag in lagTimes){
       tel = 0
       for(r in ref){
         tel = tel + 1
-        NC = open.ncdf(paste(m,r,v,"PPM.nc4", sep="_"))
-        data = get.var.ncdf(NC, paste("Lead",lag, sep="_"))
+        NC = open.ncdf(paste(m,r,v,"PPM_lead0_only.nc4", sep="_"))
+        data = get.var.ncdf(NC, paste("Lead",floor(lag), sep="_"))
         close.ncdf(NC)
-        temp = rowMeans(data[,,], dims=2)
-        outPPM[[varCount]][,,tel] = temp #mapFlip(temp)
+        temp = rowMeans(data[,,seq(ceiling(lag*2),24,2)], dims=2)
+        outPPM[[varCount]][,,tel] = temp
       }
       ensMean = ensMean + rowMeans(outPPM[[varCount]], na.rm=T, dims=2)
     }
@@ -59,13 +59,13 @@ for(lag in lagTimes){
 
 A = makeMatrix(length(lagTimes),length(models)+1)
 
-pdf(paste("../skillMaps_",var,".pdf", sep=""), width=10, height =7)
+pdf(paste("../skillMaps_subSeason_",var,".pdf", sep=""), width=10, height =7)
 layout(A)
 cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))(100)
 colLen = length(cols)
-par(mar=c(0,0,2,0))
+par(mar=c(0.5,0,2,0))
 plot(1,1,type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, ylab="", xlab="", main="")
-text(0.5, seq(0.925,0.075,length=length(lagTimes)), paste("Lead", lagTimes), srt=90, cex=1.5)
+text(0.5, seq(0.925,0.075,length=length(lagTimes)), paste("Lead", floor(lagTimes*4), "weeks"), srt=90, cex=1)
 
 par(mar=c(0,0,2,0))
 
