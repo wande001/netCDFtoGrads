@@ -52,7 +52,9 @@ for(lag in c(0:3,6)){
         for(time in 1:12){
           temp = data[,,time]
           for(con in 1:6){
-            outPPM[[varCount]][time,con,tel] = mean(temp[continent == con], na.rm=T)
+            pos = time+lag
+            if(pos > 12){pos= time+lag-12}
+            outPPM[[varCount]][pos,con,tel] = mean(temp[continent == con], na.rm=T)
           }
         }
       }

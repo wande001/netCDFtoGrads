@@ -22,7 +22,7 @@ makeMatrix <- function(rows, cols, size=5, legendSize = 2, labelSize = 1){
 }
 
 models = c("CanCM3", "CanCM4", "FLOR")
-var = c("tas")
+var = c("prec")
 ref = c("CFS", "PGF")
 lagTimes = c(0:3,6)
 
@@ -50,14 +50,11 @@ for(lag in lagTimes){
         temp = rowMeans(data[,,], dims=2)
         outPPM[[varCount]][,,tel] = temp #mapFlip(temp)
       }
-      ensMean = ensMean + rowMeans(outPPM[[varCount]], na.rm=T, dims=2)
     }
-    varCount = varCount + 1
-    outPPM[[varCount]] = ensMean/length(models)
   }
 }
 
-A = makeMatrix(length(lagTimes),length(models)+1)
+A = makeMatrix(length(lagTimes),length(models))
 
 pdf(paste("../skillMaps_",var,".pdf", sep=""), width=10, height =7)
 layout(A)
@@ -65,19 +62,14 @@ cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))(100)
 colLen = length(cols)
 par(mar=c(0,0,2,0))
 plot(1,1,type="n", xlim=c(0,1), ylim=c(0,1), xaxs="i", yaxs="i", axes=FALSE, ylab="", xlab="", main="")
-text(0.5, seq(0.925,0.075,length=length(lagTimes)), paste("Lead", lagTimes), srt=90, cex=1.5)
+text(0.5, seq(0.925,0.075,length=length(lagTimes)), paste("Lead", lagTimes, "months"), srt=90, cex=1.3)
 
 par(mar=c(0,0,2,0))
 
-titles = c(models, "Average")
+titles = c(models)
 
-for(p in seq(1,(length(models)+1)*length(lagTimes),1)){
-  if(p/(length(models)+1) != floor(p/(length(models)+1))){
-    ensPPM = rowMeans(outPPM[[p]], na.rm=T, dims=2)
-  }
-  else{
-    ensPPM = outPPM[[p]]
-  }
+for(p in seq(1,(length(models))*length(lagTimes),1)){
+  ensPPM = rowMeans(outPPM[[p]], na.rm=T, dims=2)
   ensPPM[is.na(landMask)] = NA
   title = ""
   ylabel = ""
