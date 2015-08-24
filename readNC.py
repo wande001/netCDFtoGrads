@@ -87,7 +87,7 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
 def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
                                       longName = None, loop=False):
     
-    rootgrp= nc.Dataset(ncFileName,'w')
+    rootgrp= nc.Dataset(ncFileName,'w', format= 'NETCDF4')
     
     #-create dimensions - time is unlimited, others are fixed
     rootgrp.createDimension('time',None)
@@ -119,7 +119,7 @@ def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
             shortVarName = varName[i]
             longVarName  = varName[i]
             if longName != None: longVarName = longName
-            var= rootgrp.createVariable(shortVarName,'f4',('time','lat','lon',) ,fill_value=MV,zlib=False)
+            var= rootgrp.createVariable(shortVarName,'f4',('time','lat','lon',) ,fill_value=MV,zlib=True)
             var.standard_name = varName[i]
             var.long_name = longVarName
             var.units = varUnits[i]
@@ -127,7 +127,7 @@ def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
         shortVarName = varName
         longVarName  = varName
         if longName != None: longVarName = longName
-        var= rootgrp.createVariable(shortVarName,'f4',('time','lat','lon',) ,fill_value=MV,zlib=False)
+        var= rootgrp.createVariable(shortVarName,'f4',('time','lat','lon',) ,fill_value=MV,zlib=True)
         var.standard_name = varName
         var.long_name = longVarName
         var.units = varUnits
