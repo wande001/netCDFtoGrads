@@ -33,7 +33,7 @@ for(i in 0:11){
   }
 }
 
-nc <- create.ncdf(paste("../resultsNetCDF/",model,"_",forcing,"_",varName,"_PPM_matrix.nc4",sep=""), PPM)
+nc <- create.ncdf(paste("../resultsNetCDF/",model,"_",forcing,"_",varName,"_PPM_matrix_highLim.nc4",sep=""), PPM)
 
 CCevents = array(0,c(360, 180, 12))
 count = 0

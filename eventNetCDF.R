@@ -4,7 +4,7 @@ modelS = c("CanCM3","CanCM4","FLOR")
 forcingS = c("CFS", "PGF")
 varNameS = c("prec", "tas")
 lim = 0.05
-Rlim = 0.0
+Rlim = 0.3
 
 for(model in modelS){
 for(forcing in forcingS){
@@ -35,7 +35,7 @@ for(i in 0:8){
   PPM[[i+26]] <- var.def.ncdf(paste("Space",i,sep="_"), "-", list(dimX, dimY, dimT), mv,prec="double")
 }
 
-nc <- create.ncdf(paste("../resultsNetCDF/",model,"_",forcing,"_",varName,"_PPM.nc4",sep=""), PPM)
+nc <- create.ncdf(paste("../resultsNetCDF/",model,"_",forcing,"_",varName,"_PPM_highLim.nc4",sep=""), PPM)
 
 CCevents = array(0,c(360, 180, 12))
 count = 0

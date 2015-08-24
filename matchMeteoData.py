@@ -8,6 +8,7 @@ import numpy.ma as ma
 import pcraster as pcr
 import datetime
 import sys
+import glob
 
 def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
                                       longName = None, loop=False):
@@ -239,7 +240,7 @@ def matchCDF(data, orgDataCDF, refDataCDF, var="prec"):
         lowData = minVal + (out[selVal] - p) * (maxVal - minVal)
         highData = minVal + ((p+1) - out[selVal]) * (maxVal - minVal)
         transData[selVal] = (lowData + highData)/2
-        if p == 0 and (var == "prec" or var == "prlr"):
+        if p == 0 and var == "prec":
             randomRainChance = np.maximum(nonZeroOrg - nonZeroRef,0.0)/np.maximum(nonZeroOrg, 1e-10)
             randomRainChance[randomRainChance >= 0.99999] = 2
             randomRain = (np.random.random((nx,ny)) - (1-randomRainChance)) / np.maximum(randomRainChance, 1e-10)
@@ -355,12 +356,13 @@ outputDir = model+"_"+ref
 files = glob.glob(inputDir+"/*"+year+zero+month+"01*")
 files.sort()
 
+year = int(year)
+month = int(month)
+
 for f in files:
   if f.split('.')[-1] == 'nc4':
     print f
-    year = int(f.split('-')[-2][-8:-4])
-    month = int(f.split('-')[-2][-4:-2])
-    varNames = f.split('_')[0]
+    varNames = f.split("/")[1].split('_')[0]
     if varNames == "tas":
       varUnits = "degree C"
       refVar = "tas"
@@ -369,21 +371,26 @@ for f in files:
       refVar = "prec"
     print varNames
     print varUnits
-    createNetCDF(outputDir+"/"+f, refVar, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180))
+    ncOutFile = outputDir+"/"+f.split("/")[-1]
+    print ncOutFile
+    createNetCDF(ncOutFile, refVar, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180))
     fileLen = 365
     if (year/4. == np.floor(year/4.) and month <= 2) or \
       ((year+1)/4. == np.floor((year+1)/4.) and month >= 3):
       fileLen = 366
     if model != "FLOR":
-      tempData = netcdf2PCRobjClone(model+"/"+f, varNames, datetime.datetime(year, month, 1), allData=True)
+      tempData = netcdf2PCRobjClone(f, varNames, datetime.datetime(year, month, 1), allData=True)
     else:
-      tempData = netcdf2PCRobjClone(model+"/"+f, varNames, t+1, useDoy="Yes", allData=True)    
+      tempData = netcdf2PCRobjClone(f, varNames, 1, useDoy="Yes", allData=True)    
+    leapDelta = 0
     for t in range(fileLen):
       dateInput = datetime.datetime(year, month, 1)+datetime.timedelta(days=t)
+      if dateInput.month == 2 and dateInput.day == 29 and model != "FLOR":
+        leapDelta = -1
       print dateInput
       if dateInput.day == 1:
         refCDF = netcdf2PCRobjCloneMultiDim("resultsNetCDF/"+ref+"_"+refVar+"_pctl.nc4", refVar, dateInput, useDoy = 'month')
         orgCDF = netcdf2PCRobjCloneMultiDim("resultsNetCDF/"+model+"_"+varNames+"_pctl.nc4", varNames, dateInput, useDoy = 'month')
-      matchData = matchCDF(tempData[t,:,:], orgCDF, refCDF, var=varNames)
-      data2NetCDF(outputDir+"/"+f, refVar, matchData, dateInput, posCnt = t)
+      matchData = matchCDF(tempData[t-leapDelta,:,:], orgCDF, refCDF, var=refVar)
+      data2NetCDF(ncOutFile, refVar, matchData, dateInput, posCnt = t)
 
