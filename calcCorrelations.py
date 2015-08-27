@@ -34,6 +34,15 @@ if model == "FLOR":
         factor = 1.
     else:
         factor = 86400.*1000.
+
+if model == "CCSM":
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/resCCSM/"
+    ensNr = 10
+    if varName == "tas":
+        factor = 1.
+    else:
+        factor = 1
+
 if ref == "PGF" and varNameRef == "prec":
     ncRef = "../refData/prec_PGF_PCR.nc4"
     refFactor = 1.

@@ -51,6 +51,9 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
     if model == "FLOR":
         orgDate = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
         orgDateEnd = orgDate
+    if model == "CCSM":
+        orgDate = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
+        orgDateEnd = orgDate
     date = dateInput
     if useDoy == "Yes": 
         idx = dateInput - 1
@@ -62,7 +65,7 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
         deltaDays = datetime.datetime(lastDay.year,lastDay.month,lastDay.day) - orgDateEnd + datetime.timedelta(days=1)
         # time index (in the netCDF file)
         nctime = f.variables['time']  # A netCDF time variable object.
-        if model == "FLOR":
+        if model == "FLOR" or model == "CCSM":
             #print int(np.where(nctime[:] == int(dateDif.days)+0.5)[0])
             #print deltaDays.days
             #print nctime[:]
@@ -83,6 +86,7 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
     f.close()
     
     return(outputData)
+
 
 def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
                                       longName = None, loop=False):
@@ -276,6 +280,31 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
             endDate = lagToDateStr(findMonthEnd(y+addYear, end.month, end.day, model), lag, model)
             deltaDay = (datetime.datetime.strptime(endDate,'%Y-%m-%d')-datetime.datetime.strptime(lagToDateStr(startDate, lag, model),'%Y-%m-%d')).days + 1
             for ens in range(ensNr):
+                if model == "CCSM":
+                    zero = ""
+                    if len(str(m)) < 2: zero = "0"
+                    ncFile = dirLoc+varName+"_day_CCSM4_"+str(y)+zero+str(m)+"01"+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
+                    print ncFile
+                    print lagToDateStr(startDate, lag, model)
+                    print endDate
+                    if ens == 0:
+                        ensCount = []
+                        tempData = np.zeros((ensNr, 180,360))
+                        try:
+                            temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                            tempData[ens,:,:] = aggregateTime(temp, var=varName)
+                            ensCount.append(ens)
+                        except:
+                            foo = 0
+                    else:
+                        try:
+                             tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
+                             ensCount.append(ens)
+                        except:
+                             foo = 0
+                    if ens == ensNr-1:
+                        tempData = tempData[ensCount,:,:]
+                        print ensCount
                 if model == "FLOR":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
