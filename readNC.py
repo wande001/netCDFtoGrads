@@ -344,8 +344,9 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
                         tempData[ens,:,:] = aggregateTime(temp, var=varName)
                     else:
                         tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
-            data[lastEntry,:,:] = ensembleMean(tempData)
-            lastEntry += 1
+            if tempData.shape[0] != 0:
+                data[lastEntry,:,:] = ensembleMean(tempData)
+                lastEntry += 1
     return(data)
 
 
