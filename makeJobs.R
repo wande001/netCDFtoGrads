@@ -27,10 +27,10 @@ runs[[11]] = "python calcCorrelations.py 10 2 24 20 $lag $model $varName $ref $v
 runs[[12]] = "python calcCorrelations.py 11 2 24 22 $lag $model $varName $ref $varRef"
 runs[[13]] = "python calcCorrelations.py 12 2 24 24 $lag $model $varName $ref $varRef"
 
-modelS = c("CanCM3","CanCM4","FLOR")
-varNameS = c("tas","tas","tas")
+modelS = c("CCSM")
+varNameS = c("prec")
 refS = c("PGF","CFS")
-varRefS = "tas"
+varRefS = "prec"
 lagS = c(0:11)
 
 jobDir = "../jobs/"
