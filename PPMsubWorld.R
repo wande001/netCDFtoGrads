@@ -45,7 +45,7 @@ for(lag in lagTimes){
       for(r in ref){
         tel = tel + 1
         NC = open.ncdf(paste(m,r,v,"PPM_lead0_only.nc4", sep="_"))
-        data = get.var.ncdf(NC, paste("Lead",floor(lag), sep="_"))
+        data = get.var.ncdf(NC, paste("Lead",floor(lag), sep="_"))[,180:1,]
         close.ncdf(NC)
         temp = rowMeans(data[,,seq(ceiling(lag*2),24,2)], dims=2)
         outPPM[[varCount]][,,tel] = temp
