@@ -28,9 +28,9 @@ runs[[12]] = "python calcCorrelations.py 11 2 24 22 $lag $model $varName $ref $v
 runs[[13]] = "python calcCorrelations.py 12 2 24 24 $lag $model $varName $ref $varRef"
 
 modelS = c("CCSM")
-varNameS = c("prec")
+varNameS = c("tas")
 refS = c("PGF","CFS")
-varRefS = "prec"
+varRefS = "tas"
 lagS = c(0:11)
 
 jobDir = "../jobs/"
