@@ -245,6 +245,7 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
     start = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
     end = datetime.datetime.strptime(str(endDay),'%Y-%m-%d')
     lastEntry = 0
+    yearEntries = []
     m = start.month
     for y in range(start.year, end.year+1):
         tempStartDate = datetime.datetime.strptime(str(str(y)+"-"+str(m)+"-01"),'%Y-%m-%d')
@@ -345,9 +346,10 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
                     else:
                         tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
             if tempData.shape[0] != 0:
+                yearEntries.append(lastEntry)
                 data[lastEntry,:,:] = ensembleMean(tempData)
                 lastEntry += 1
-    return(data)
+    return(data[yearEntries,:,:])
 
 
 
