@@ -70,7 +70,8 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
             #print deltaDays.days
             #print nctime[:]
             #print int(np.where(nctime[:] == int(deltaDays.days)-0.5)[0])
-            idx = range(int(np.where(nctime[:] == int(dateDif.days)+0.5)[0]), int(np.where(nctime[:] == int(deltaDays.days)-0.5)[0])+1)
+            print np.minimum(int(deltaDays.days)-0.5, np.max(nctime[:]))
+            idx = range(int(np.where(nctime[:] == int(dateDif.days)+0.5)[0]), int(np.where(nctime[:] == np.minimum(int(deltaDays.days)-0.5, np.max(nctime[:])))[0])+1)
         else:
             idx = range(int(np.where(nctime[:] == int(dateDif.days))[0]), int(np.where(nctime[:] == int(deltaDays.days)-1)[0])+1)
     else:
@@ -345,12 +346,12 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
                         tempData[ens,:,:] = aggregateTime(temp, var=varName)
                     else:
                         tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
-            if tempData.shape[0] != 0:
+            if tempData.shape[0] != 100:
+                print lastEntry
                 yearEntries.append(lastEntry)
                 data[lastEntry,:,:] = ensembleMean(tempData)
                 lastEntry += 1
     return(data[yearEntries,:,:])
-
 
 
 def aggregateTime(data, timeDimension = 0, var="prec"):
@@ -397,6 +398,7 @@ def readForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF"):
     lastEntry = 0
     m = start.month
     d = start.day
+    yearEntries = []
     for y in range(start.year, end.year+1):
         tempStartDate = datetime.datetime.strptime(str(str(y)+"-"+str(m)+"-"+str(d)),'%Y-%m-%d')
         zero = ""
@@ -416,9 +418,10 @@ def readForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF"):
             endDate = lagToDateStr(findMonthEnd(y+addYear, end.month, end.day, model), lag, model)
             print lagToDateStr(startDate, lag, model)
             print endDate
+            yearEntries.append(lastEntry)
             data[lastEntry,:,:] = aggregateTime(readNC(ncFile, varName, lagToDateStr(startDate, lag, model), endDay=endDate, model="PGF"), var=varName)
             lastEntry += 1
-    return(data)
+    return(data[yearEntries,:,:])
 
 
 def readRandomForcing(ncFile, varName, dateInput, endDay, lag=0, model="PGF", ensNr = 10):
