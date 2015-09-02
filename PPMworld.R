@@ -21,7 +21,7 @@ makeMatrix <- function(rows, cols, size=5, legendSize = 2, labelSize = 1){
   return(A)
 }
 
-models = c("CanCM3", "CanCM4", "FLOR")
+models = c("CanCM3", "CanCM4", "FLOR","CCSM")
 var = c("prec")
 ref = c("CFS", "PGF")
 lagTimes = c(0:3,6)

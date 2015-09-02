@@ -2,7 +2,7 @@ require(ncdf)
 require(fields)
 require(akima)
 
-models = c("CanCM3","CanCM4", "FLOR")
+models = c("CanCM3","CanCM4", "FLOR","CCSM")
 var = c("prec", "tas")
 ref = c("PGF", "CFS")
 
@@ -188,7 +188,7 @@ pdf("../matrixPPM_model.pdf", width=7, height=4)
 
 colLen =100
 cols = colorRampPalette(c("grey","yellow" ,"green", "blue"))(colLen)
-A = makeMatrix(2,3, labelSize=1)
+A = makeMatrix(2,4, labelSize=1)
 
 layout(A)
 
@@ -212,11 +212,11 @@ plot(1,1,type="n", xlim=c(0,1), ylim=c(-0.15,12.2), xaxs="i", yaxs="i", axes=FAL
 text(0.75, seq(0.2,11.8, length=length(yo)), yLabel)
 text(0.22, 6.0, "Temperature temporal aggr.", srt=90)
 
-title = c("CanCM3", "","CanCM4","", "FLOR")
+title = c("CanCM3", "","CanCM4","", "FLOR","", "CCSM")
 
 par(mar=c(0,0,3,1))
 v = 1
-for(mod in seq(1,5,2)){
+for(mod in seq(1,7,2)){
   plotZ = rowMeans(outMatrix[[v]][,7,mod:(mod+1)], na.rm=T)
   sel = which(plotZ <= 1)
   fld <- interp(x = plotX[sel], y = plotY[sel], z = plotZ[sel], xo=xo ,yo=yo)
@@ -227,7 +227,7 @@ for(mod in seq(1,5,2)){
 
 par(mar=c(2,0,1,1))
 v = 2
-for(mod in seq(1,5,2)){
+for(mod in seq(1,7,2)){
   plotZ = rowMeans(outMatrix[[v]][,7,mod:(mod+1)], na.rm=T)
   sel = which(plotZ <= 1)
   fld <- interp(x = plotX[sel], y = plotY[sel], z = plotZ[sel], xo=xo ,yo=yo)
