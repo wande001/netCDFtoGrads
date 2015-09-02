@@ -193,7 +193,7 @@ def findMonthEnd(year, month, day, model):
     if day > 25: day=31
     if out.day > day:
         out = datetime.datetime(year, month, day)
-    if model == "CanCM3" or model == "CanCM4":
+    if model == "CanCM3" or model == "CanCM4" or model == "CCSM":
         if out.day == 29:
             out = datetime.datetime(year, month, 28)
     return(out)
