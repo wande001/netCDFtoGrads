@@ -470,7 +470,7 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
 def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirLoc=""):
     deltaDay = lagToDateTime(endDay, lag, model).day - lagToDateTime(dateInput, lag, model).day + 1
     deltaYear = lagToDateTime(endDay, lag, model).year - lagToDateTime(dateInput, lag, model).year + 1
-    data = np.zeros((ensNr,deltaDay,deltaYear,180,360))
+    data = np.zeros((ensNr,deltaYear,180,360))
     print data.shape
     start = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
     end = datetime.datetime.strptime(str(endDay),'%Y-%m-%d')
@@ -519,17 +519,17 @@ def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0,
                     print lagToDateStr(startDate, lag, model)
                     print endDate
                     if ens == 0:
-                        tempData = np.zeros((ensNr,deltaDay, 180,360))
+                        tempData = np.zeros((ensNr, 180,360))
                         try:
                             temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                            tempData[ens,:,:,:] = temp
+                            tempData[ens,:,:] = aggregateTime(temp, var=varName)
                         except:
-                            tempData[ens,:,:,:] = np.nan
+                            tempData[ens,:,:] = np.nan
                     else:
                         try:
-                             tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                             tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
                         except:
-                             tempData[ens,:,:,:] = np.nan
+                             tempData[ens,:,:] = np.nan
                 if model == "FLOR":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
@@ -539,10 +539,10 @@ def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0,
                     print endDate
                     if ens == 0:
                         temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                        tempData = np.zeros((ensNr,deltaDay,180,360))
-                        tempData[ens,:,:,:] = temp
+                        tempData = np.zeros((ensNr,180,360))
+                        tempData[ens,:,:] = aggregateTime(temp, var=varName)
                     else:
-                        tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                        tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
                 if model == "CanCM3":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
@@ -552,10 +552,10 @@ def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0,
                     print endDate
                     if ens == 0:
                         temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                        tempData = np.zeros((ensNr,deltaDay, 180,360))
-                        tempData[ens,:,:,:] = temp
+                        tempData = np.zeros((ensNr, 180,360))
+                        tempData[ens,:,:] = aggregateTime(temp, var=varName)
                     else:
-                        tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                        tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
                 if model == "CanCM4":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
@@ -565,19 +565,19 @@ def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0,
                     print endDate
                     if ens == 0:
                         temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                        tempData = np.zeros((ensNr,deltaDay, 180,360))
-                        tempData[ens,:,:,:] = temp
+                        tempData = np.zeros((ensNr, 180,360))
+                        tempData[ens,:,:] = aggregateTime(temp, var=varName)
                     else:
-                        tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                        tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
             if tempData.shape[0] != 100:
                 print lastEntry
                 yearEntries.append(lastEntry)
                 data[:,:,lastEntry,:,:] = tempData
                 lastEntry += 1
-    out = ensembleMean(data[:,:,yearEntries,:,:])
-    tempVar = data.reshape(ensNr*deltaDay*deltaYear,180,360)
+    out = ensembleMean(data[:,yearEntries,:,:])
+    tempVar = data.reshape(ensNr*deltaYear,180,360)
     tempVar[np.isnan(tempVar) == False]
-    varData = np.var(data.reshape(ensNr*deltaDay*deltaYear,180,360), axis=0)
+    varData = np.var(data.reshape(ensNr*deltaYear,180,360), axis=0)
     return(out, varData)
 
 

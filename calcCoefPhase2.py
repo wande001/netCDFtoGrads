@@ -80,16 +80,9 @@ for lag in range(12):
     print dateInput
     print endDay
     
-    CanCM3, varCanCM3 = returnForecast(dateInput, endDay, "CanCM3", "prec", lag)
-    ensCanCM3 = np.sum(CanCM3, axis=0)
-    del(CanCM3)
-    CanCM4, varCanCM4 = returnForecast(dateInput, endDay, "CanCM4", "prec", lag)
-    ensCanCM4 = np.sum(CanCM4, axis=0)
-    del(CanCM4)
-    FLOR, varFLOR = returnForecast(dateInput, endDay, "FLOR", "prec", lag)
-    FLOR = FLOR[0:CanCM3.shape[0],:,:,:]
-    ensFLOR = np.sum(FLOR, axis=0)
-    del(FLOR)
+    ensCanCM3, varCanCM3 = returnForecast(dateInput, endDay, "CanCM3", "prec", lag)
+    ensCanCM4, varCanCM4 = returnForecast(dateInput, endDay, "CanCM4", "prec", lag)
+    ensFLOR, varFLOR = returnForecast(dateInput, endDay, "FLOR", "prec", lag)
     newData = np.zeros((3, 180, 360))
     newVar = np.zeros((180, 360))
     
@@ -120,7 +113,10 @@ for lag in range(12):
     data2NetCDF(ncOutputFile, "var", newVar, lagToDateTime(dateInput, lag, "PGF"), posCnt = posCount)
     posCount += 1
     filecache = None
-    del(ensCanCM3)
-    del(ensCanCM4)
-    del(ensFLOR)
-    del(dataPGF)
+    del ensCanCM3
+    del ensCanCM4
+    del ensFLOR
+    del dataPGF
+    del varCanCM3
+    del varCanCM4
+    del varFLOR
