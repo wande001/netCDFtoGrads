@@ -238,120 +238,6 @@ def lagToDateTime(date, lag, model):
         tempEndDate = findMonthEnd(y,m+lag,d,model)
     return(tempEndDate)
 
-def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirLoc=""):
-    deltaDay = lagToDateTime(endDay, lag, model).day - lagToDateTime(dateInput, lag, model).day + 1
-    deltaYear = lagToDateTime(endDay, lag, model).year - lagToDateTime(dateInput, lag, model).year + 1
-    data = np.zeros((ensNr,deltaDay,deltaYear,180,360))
-    print data.shape
-    start = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
-    end = datetime.datetime.strptime(str(endDay),'%Y-%m-%d')
-    lastEntry = 0
-    yearEntries = []
-    m = start.month
-    for y in range(start.year, end.year+1):
-        tempStartDate = datetime.datetime.strptime(str(str(y)+"-"+str(m)+"-01"),'%Y-%m-%d')
-        zero = ""
-        if len(str(m)) < 2: zero = "0"
-        zeroDay = ""
-        if len(str(start.day)) < 2: zeroDay="0"
-        startDate = str(tempStartDate.year)+"-"+zero+str(tempStartDate.month)+"-"+zeroDay+str(start.day)
-        tempEnd = lagToDateTime(findMonthEnd(y, m, 31, model),11, model)
-        if tempStartDate.year >= start.year and tempStartDate < (end - datetime.timedelta (days = 1)):
-            zero = ""
-            if len(str(m)) < 2: zero = "0"
-            zero2 = ""
-            if len(str(tempEnd.month)) < 2: zero2 = "0"
-            tempEndDate = lagToDateTime(findMonthEnd(y,end.month,end.day, model), lag, model)
-            #tempEndDate = lagToDateTime(str(y)+"-"+zero+str(m)+"-"+str(end.day), lag)
-            zero = ""
-            if len(str(tempEndDate.month)) < 2: zero = "0"
-            startDateTime = lagToDateTime(startDate, lag, model)
-            endDateTime = lagToDateTime(findMonthEnd(y,end.month,end.day, model), lag, model)
-            addYear = 0
-            print endDateTime.month
-            print startDateTime.month
-            if endDateTime.year < startDateTime.year: addYear = 1
-            endDateTime = lagToDateTime(findMonthEnd(y+addYear,end.month,end.day, model), lag, model)
-            print startDate
-            print findMonthEnd(y,end.month,end.day, model)
-            print lagToDateTime(findMonthEnd(y,end.month,end.day, model), lag, model)
-            print lag
-            print endDateTime
-            print lagToDateTime(startDate, lag, model)
-            if endDateTime.month < startDateTime.month and endDateTime.year == startDateTime.year: addYear = 1
-            endDate = lagToDateStr(findMonthEnd(y+addYear, end.month, end.day, model), lag, model)
-            deltaDay = (datetime.datetime.strptime(endDate,'%Y-%m-%d')-datetime.datetime.strptime(lagToDateStr(startDate, lag, model),'%Y-%m-%d')).days + 1
-            for ens in range(ensNr):
-                if model == "CCSM":
-                    zero = ""
-                    if len(str(m)) < 2: zero = "0"
-                    ncFile = dirLoc+varName+"_day_CCSM4_"+str(y)+zero+str(m)+"01"+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
-                    print ncFile
-                    print lagToDateStr(startDate, lag, model)
-                    print endDate
-                    if ens == 0:
-                        tempData = np.zeros((ensNr,deltaDay, 180,360))
-                        try:
-                            temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                            tempData[ens,:,:,:] = temp
-                        except:
-                            tempData[ens,:,:,:] = np.nan
-                    else:
-                        try:
-                             tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                        except:
-                             tempData[ens,:,:,:] = np.nan
-                if model == "FLOR":
-                    zero = ""
-                    if len(str(m)) < 2: zero = "0"
-                    ncFile = dirLoc+varName+"_day_GFDL-FLORB01_FLORB01-P1-ECDA-v3.1-"+zero+str(m)+str(y)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
-                    print ncFile
-                    print lagToDateStr(startDate, lag, model)
-                    print endDate
-                    if ens == 0:
-                        temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                        tempData = np.zeros((ensNr,deltaDay,180,360))
-                        tempData[ens,:,:,:] = temp
-                    else:
-                        tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                if model == "CanCM3":
-                    zero = ""
-                    if len(str(m)) < 2: zero = "0"
-                    ncFile = dirLoc+varName+"_day_"+model+"_"+str(y)+zero+str(m)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
-                    print ncFile
-                    print lagToDateStr(startDate, lag, model)
-                    print endDate
-                    if ens == 0:
-                        temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                        tempData = np.zeros((ensNr,deltaDay, 180,360))
-                        tempData[ens,:,:,:] = temp
-                    else:
-                        tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                if model == "CanCM4":
-                    zero = ""
-                    if len(str(m)) < 2: zero = "0"
-                    ncFile = dirLoc+varName+"_day_"+model+"_"+str(y)+zero+str(m)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
-                    print ncFile
-                    print lagToDateStr(startDate, lag, model)
-                    print endDate
-                    if ens == 0:
-                        temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-                        tempData = np.zeros((ensNr,deltaDay, 180,360))
-                        tempData[ens,:,:,:] = temp
-                    else:
-                        tempData[ens,:,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
-            if tempData.shape[0] != 100:
-                print lastEntry
-                yearEntries.append(lastEntry)
-                data[:,:,lastEntry,:,:] = tempData
-                lastEntry += 1
-    out = ensembleMean(data[:,:,yearEntries,:,:])
-    tempVar = data.reshape(ensNr*deltaDay*deltaYear,180,360)
-    tempVar[np.isnan(tempVar) == False]
-    varData = np.var(data.reshape(ensNr*deltaDay*deltaYear,180,360), axis=0)
-    return(out, varData)
-
-
 def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirLoc=""):
     deltaDay = lagToDateTime(endDay, lag, model).day - lagToDateTime(dateInput, lag, model).day + 1
     deltaYear = lagToDateTime(endDay, lag, model).year - lagToDateTime(dateInput, lag, model).year + 1
@@ -572,7 +458,7 @@ def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0,
             if tempData.shape[0] != 100:
                 print lastEntry
                 yearEntries.append(lastEntry)
-                data[:,:,lastEntry,:,:] = tempData
+                data[:,lastEntry,:,:] = tempData
                 lastEntry += 1
     out = ensembleMean(data[:,yearEntries,:,:])
     tempVar = data.reshape(ensNr*deltaYear,180,360)
