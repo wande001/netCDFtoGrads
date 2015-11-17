@@ -44,7 +44,7 @@ def calcEnsVar(covMatrix, coef):
   totalVar = 0
   for i in range(covMatrix.shape[0]):
     for j in range(covMatrix.shape[0]):
-      totalVar += coef[i]*coef[j]*covMatrix[i,j]
+      totalVar += coef[i]*coef[j]*abs(covMatrix[i,j])
   return(totalVar)
 
 varName = sys.argv[1]
@@ -68,7 +68,7 @@ inputMonth = np.tile(np.repeat(["01","02","03","04","05","06","07","08","09","10
 inputYear = np.repeat(["2011","2012"],24)
 varNames = ["CanCM3","CanCM4","FLOR","var"]
 varUnits = ["-","-","-","-"]
-createNetCDF(ncOutputFile, varNames, varUnits, np.arange(-89.5,90,1), np.arange(-179.5,180), loop=True)
+createNetCDF(ncOutputFile, varNames, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180), loop=True)
 
 posCount = 0
 

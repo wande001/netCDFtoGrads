@@ -93,7 +93,7 @@ def returnCDF(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirL
                     print lagToDateStr(startDate, lag, model)
                     print endDate
                     if ens == 0:
-                        tempData = np.zeros((deltaDay, ensNr, 180,360))
+                        tempData = np.zeros((deltaDay, ensNr, 180,360))+np.nan
                         try:
                             temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
                             tempData[:,ens,:,:] = temp[0:deltaDay,:,:]
@@ -182,7 +182,7 @@ def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
             shortVarName = varName[i]
             longVarName  = varName[i]
             if longName != None: longVarName = longName
-            var= rootgrp.createVariable(shortVarName,'f4',('pctl','time','lat','lon') ,fill_value=MV,zlib=False)
+            var= rootgrp.createVariable(shortVarName,'f4',('time','lat','lon','pctl') ,fill_value=MV,zlib=False)
             var.standard_name = varName[i]
             var.long_name = longVarName
             var.units = varUnits[i]
@@ -190,7 +190,7 @@ def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
         shortVarName = varName
         longVarName  = varName
         if longName != None: longVarName = longName
-        var= rootgrp.createVariable(shortVarName,'f4',('pctl','time','lat','lon') ,fill_value=MV,zlib=False)
+        var= rootgrp.createVariable(shortVarName,'f4',('time','lat','lon','pctl') ,fill_value=MV,zlib=False)
         var.standard_name = varName
         var.long_name = longVarName
         var.units = varUnits
@@ -208,7 +208,7 @@ def data2NetCDF(ncFile,varName,varField,timeStamp,posCnt = None):
   if posCnt == None: posCnt = len(date_time)
   
   date_time[posCnt]= nc.date2num(timeStamp,date_time.units,date_time.calendar)
-  rootgrp.variables[shortVarName][:,posCnt,:,:]= (varField)
+  rootgrp.variables[shortVarName][posCnt,:,:,:]= (varField)
   
   rootgrp.sync()
   rootgrp.close()
@@ -244,7 +244,7 @@ if model == "FLOR":
     else:
         factor = 1.
 if model == "CCSM":
-    dirLoc = "/tigress/nwanders/Scripts/Seasonal/resCCSM/"
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/CCSM/"
     ensNr = 10
     if varName == "tas":
         factor = 1.
@@ -285,17 +285,21 @@ for event in range(0,end,step):
        data = returnCDF(dateInput, endDay, model, varName, lag, dirLoc = dirLoc, ensNr = ensNr) * factor
        numObs = data.shape[0] * data.shape[1] * data.shape[2]
        data = data.reshape(numObs, 180, 360)
+       sel = np.isnan(data[:,1,1]) == False
+       print sel
+       data = data[sel,:,:]
 
     if model == "PGF" or model == "CFS":
        data = readForcingCDF(ncRef, varName, dateInput, endDay=endDay, lag=lag, model=model) * factor
        numObs = data.shape[0] * data.shape[1]
        data = data.reshape(numObs, 180, 360)
 
-    out = np.zeros((101,180, 360))
+    out = np.zeros((180, 360,101))
 
-    for i in range(101):
-      print i
-      out[i,:,:] = np.percentile(data, float(i), axis=0)
+    if data.shape[0] != 0:
+      for i in range(101):
+        print i
+        out[:,:,i] = np.percentile(data, float(i), axis=0)
 
     data2NetCDF(ncOutputFile, varName, out, lagToDateTime(dateInput, 0, model), posCnt = posCount)
     posCount += 1
