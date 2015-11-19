@@ -471,7 +471,7 @@ def aggregateTime(data, timeDimension = 0, var="prec"):
     if var == "tas":
         outPut = data.mean(axis=timeDimension)
     else:
-        outPut = data.sum(axis=timeDimension)
+        outPut = data.mean(axis=timeDimension)
     return(outPut)
 
 def ensembleMean(data, ensDimension = 0):
