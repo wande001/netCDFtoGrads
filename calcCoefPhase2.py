@@ -56,6 +56,7 @@ varNameRef = varName
 if ref == "PGF" and varNameRef == "prec":
     ncRef = "../refData/prec_PGF_PCR.nc4"
     refFactor = 1000.
+
 if ref == "PGF" and varNameRef == "tas":
     ncRef = "../refData/tas_PGF_PCR.nc4"
     refFactor = 1.
@@ -66,8 +67,8 @@ startDays = np.tile(["01","16"],24)
 endDays = np.tile(["15","31","15","28","15","31","15","30","15","31","15","30","15","31","15","31","15","30","15","31","15","30","15","31"],2)
 inputMonth = np.tile(np.repeat(["01","02","03","04","05","06","07","08","09","10","11","12"],2),2)
 inputYear = np.repeat(["2011","2012"],24)
-varNames = ["CanCM3","CanCM4","FLOR","var"]
-varUnits = ["-","-","-","-"]
+varNames = ["CanCM3","CanCM4","FLOR","var","CanCM3ref","CanCM4ref","FLORref","PGFref"]
+varUnits = ["-","-","-","-","-","-","-","-"]
 createNetCDF(ncOutputFile, varNames, varUnits, np.arange(89.5,-90,-1), np.arange(-179.5,180), loop=True)
 
 posCount = 0
@@ -80,9 +81,9 @@ for lag in range(12):
     print dateInput
     print endDay
     
-    ensCanCM3, varCanCM3 = returnForecast(dateInput, endDay, "CanCM3", "prec", lag)
-    ensCanCM4, varCanCM4 = returnForecast(dateInput, endDay, "CanCM4", "prec", lag)
-    ensFLOR, varFLOR = returnForecast(dateInput, endDay, "FLOR", "prec", lag)
+    ensCanCM3, varCanCM3 = returnForecast(dateInput, endDay, "CanCM3", varName, lag)
+    ensCanCM4, varCanCM4 = returnForecast(dateInput, endDay, "CanCM4", varName, lag)
+    ensFLOR, varFLOR = returnForecast(dateInput, endDay, "FLOR", varName, lag)
     newData = np.zeros((3, 180, 360))
     newVar = np.zeros((180, 360))
     
@@ -93,14 +94,14 @@ for lag in range(12):
       for j in range(360):
         try:
             A = np.zeros((31,3))
-            A[:,0] = ensCanCM3[:,i,j]
-            A[:,1] = ensCanCM4[:,i,j]
-            A[:,2] = ensFLOR[:,i,j]
+            A[:,0] = ensCanCM3[:,i,j] - np.mean(ensCanCM3[:,i,j])
+            A[:,1] = ensCanCM4[:,i,j] - np.mean(ensCanCM4[:,i,j])
+            A[:,2] = ensFLOR[:,i,j] - np.mean(ensFLOR[:,i,j])
             covAll = np.cov(A, rowvar=0)
             covAll[0,0] = varCanCM3[i,j]
             covAll[1,1] = varCanCM4[i,j]
             covAll[2,2] = varFLOR[i,j]
-            out = nnls(A[:,0:3], dataPGF[:,i,j])[0]
+            out = nnls(A[:,0:3], dataPGF[:,i,j]-np.mean(dataPGF[:,i,j]))[0]
             outVar = calcEnsVar(covAll[0:3,0:3], out)
             newData[:,i,j] = out[0:3]
             newVar[i,j] = outVar
@@ -111,6 +112,10 @@ for lag in range(12):
     data2NetCDF(ncOutputFile, "CanCM4", newData[1,:,:], lagToDateTime(dateInput, lag, "PGF"), posCnt = posCount)
     data2NetCDF(ncOutputFile, "FLOR", newData[2,:,:], lagToDateTime(dateInput, lag, "PGF"), posCnt = posCount)
     data2NetCDF(ncOutputFile, "var", newVar, lagToDateTime(dateInput, lag, "PGF"), posCnt = posCount)
+    data2NetCDF(ncOutputFile, "CanCM3ref", np.mean(ensCanCM3, axis=0), lagToDateTime(dateInput, lag, "PGF"), posCnt = posCount)
+    data2NetCDF(ncOutputFile, "CanCM4ref", np.mean(ensCanCM4, axis=0), lagToDateTime(dateInput, lag, "PGF"), posCnt = posCount)
+    data2NetCDF(ncOutputFile, "FLORref", np.mean(ensFLOR, axis=0), lagToDateTime(dateInput, lag, "PGF"), posCnt = posCount)
+    data2NetCDF(ncOutputFile, "PGFref", np.mean(dataPGF, axis=0), lagToDateTime(dateInput, lag, "PGF"), posCnt = posCount)
     posCount += 1
     filecache = None
     del ensCanCM3
