@@ -85,6 +85,14 @@ def returnCDF(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirL
                         tempData[:,ens,:,:] = temp[0:deltaDay,:,:]
                     else:
                         tempData[:,ens,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)[0:deltaDay,:,:]
+                if model == "Weighted":
+                    zero = ""
+                    if len(str(m)) < 2: zero = "0"
+                    ncFile = dirLoc+str(y)+zero+str(m)+"01_forecasts_CanCM3_CanCM4_FLOR.nc"
+                    print ncFile
+                    print lagToDateStr(startDate, lag, model)
+                    print endDate
+                    tempData = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
                 if model == "CCSM":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
@@ -250,6 +258,13 @@ if model == "CCSM":
         factor = 1.
     else:
         factor = 1.
+if model == "Weighted":
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/Weighted/"
+    ensNr = 1
+    if varName == "tas":
+        factor = 1.
+    else:
+        factor = 1.
 if model == "PGF" and varName == "prec":
     ncRef = "../refData/prec_PGF_PCR.nc4"
     factor = 1.
@@ -289,7 +304,7 @@ for event in range(0,end,step):
        print sel
        data = data[sel,:,:]
 
-    if model == "PGF" or model == "CFS":
+    if model == "PGF" or model == "CFS" or model == "Weighted":
        data = readForcingCDF(ncRef, varName, dateInput, endDay=endDay, lag=lag, model=model) * factor
        numObs = data.shape[0] * data.shape[1]
        data = data.reshape(numObs, 180, 360)
