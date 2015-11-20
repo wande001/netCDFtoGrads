@@ -1,6 +1,7 @@
 from readNC import *
 #from plotMatrix import *
 from scipy.stats.stats import spearmanr
+import scipy.stats
 import sys
 
 def returnCDF(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirLoc=""):
@@ -46,10 +47,10 @@ def returnCDF(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirL
             endDate = lagToDateStr(findMonthEnd(y+addYear, end.month, end.day, model), lag, model)
             #deltaDay = (datetime.datetime.strptime(endDate,'%Y-%m-%d')-datetime.datetime.strptime(lagToDateStr(startDate, lag, model),'%Y-%m-%d')).days + 1
             for ens in range(ensNr):
-                if model == "FLOR":
+                if model == "Weighted" or model == "WeightedEqual":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
-                    ncFile = dirLoc+varName+"_day_GFDL-FLORB01_FLORB01-P1-ECDA-v3.1-"+zero+str(m)+str(y)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
+                    ncFile = dirLoc+str(y)+zero+str(m)+"01_forecasts_CanCM3_CanCM4_FLOR.nc"
                     print ncFile
                     print lagToDateStr(startDate, lag, model)
                     print endDate
@@ -59,6 +60,19 @@ def returnCDF(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirL
                         tempData[:,ens,:,:] = temp[0:deltaDay,:,:]
                     else:
                         tempData[:,ens,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)[0:deltaDay,:,:]
+                if model == "FLOR":
+                    zero = ""
+                    if len(str(m)) < 2: zero = "0"
+                    ncFile = dirLoc+varName+"_day_GFDL-FLORB01_FLORB01-P1-ECDA-v3.1-"+zero+str(m)+str(y)+"_r"+str(ens+1)+"i1p1_"+str(y)+zero+str(m)+"01-"+str(tempEnd.year)+zero2+str(tempEnd.month)+str(tempEnd.day)+".nc4"
+                    print ncFile
+                    print lagToDateStr(startDate, lag, model)
+                    print endDate
+                    if ens == 0:
+                        temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate = startDate)
+                        tempData = np.zeros((deltaDay, ensNr, temp.shape[1], temp.shape[2]))
+                        tempData[:,ens,:,:] = temp[0:deltaDay,:,:]
+                    else:
+                        tempData[:,ens,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate = startDate)[0:deltaDay,:,:]
                 if model == "CanCM3":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
@@ -95,13 +109,13 @@ def returnCDF(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirL
                     if ens == 0:
                         tempData = np.zeros((deltaDay, ensNr, 180,360))+np.nan
                         try:
-                            temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                            temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate = startDate)
                             tempData[:,ens,:,:] = temp[0:deltaDay,:,:]
                         except:
                             pass
                     else:
                         try:
-                            tempData[:,ens,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)[0:deltaDay,:,:]
+                            tempData[:,ens,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate = startDate)[0:deltaDay,:,:]
                         except:
                             pass
             data[lastEntry,:,:,:,:] = tempData[0:deltaDay,:,:,:]
@@ -155,7 +169,7 @@ def createNetCDF(ncFileName, varName, varUnits, latitudes, longitudes,\
     per.long_name= 'percentile'
     per.units= '%'
     per.standard_name = 'percentile'
-
+    
     date_time= rootgrp.createVariable('time','f4',('time',))
     date_time.standard_name= 'time'
     date_time.long_name= 'Days since 1901-01-01'
@@ -250,6 +264,22 @@ if model == "CCSM":
         factor = 1.
     else:
         factor = 1.
+if model == "Weighted":
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/Weighted/"
+    ensNr = 1
+    if varName == "tas":
+        factor = 1.
+    else:
+        factor = 1.
+if model == "WeightedEqual":
+    dirLoc = "/tigress/nwanders/Scripts/Seasonal/WeightedEqual/"
+    ensNr = 1
+    if varName == "tas":
+        factor = 1.
+    else:
+        factor = 1.
+
+
 if model == "PGF" and varName == "prec":
     ncRef = "../refData/prec_PGF_PCR.nc4"
     factor = 1.
@@ -281,8 +311,16 @@ for event in range(0,end,step):
     print dateInput
     print endDay
     
-    if model == "CanCM3" or model == "CanCM4" or model == "FLOR" or model =="CCSM":
+    if model == "CanCM3" or model == "CanCM4" or model == "FLOR" or model =="CCSM" or model == "Weighted" or model == "WeightedEqual":
        data = returnCDF(dateInput, endDay, model, varName, lag, dirLoc = dirLoc, ensNr = ensNr) * factor
+       if model == "Weighted" or model == "WeightedEqual":
+         dataVar = returnCDF(dateInput, endDay, model, varName+"_var", lag, dirLoc = dirLoc, ensNr = ensNr) * factor
+         dataAvg = np.copy(data)
+         data = np.zeros((dataAvg.shape[0], dataAvg.shape[1], 9, 180,360))
+         for n in range(9):
+           data[:,:,n,:,:] = dataAvg[:,:,0,:,:] + scipy.stats.norm.ppf((n+1)/10.)*dataVar**0.5
+         if varName == "prec":
+           data = np.maximum(data, 0.0)
        numObs = data.shape[0] * data.shape[1] * data.shape[2]
        data = data.reshape(numObs, 180, 360)
        sel = np.isnan(data[:,1,1]) == False
