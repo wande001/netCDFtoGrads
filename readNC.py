@@ -14,7 +14,7 @@ grads_exe = '/home/water1/niko/Programs/opengrads-2.1.a2.oga.1.princeton/opengra
 
 # file cache to minimize/reduce opening/closing files.  
 
-def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay = None, useDoy = None, LatitudeLongitude = False, specificFillValue = None, model = "NMME"):
+def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay = None, useDoy = None, LatitudeLongitude = False, specificFillValue = None, startDate = None, model = "NMME"):
     
     # Get netCDF file and variable name:
     f = nc.Dataset(ncFile)
@@ -49,10 +49,16 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
         orgDate = datetime.datetime(1901,1,1)
         orgDateEnd = orgDate
     if model == "FLOR":
-        orgDate = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
+        if startDate == None:
+            orgDate = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
+        else:
+            orgDate = datetime.datetime.strptime(str(startDate),'%Y-%m-%d')
         orgDateEnd = orgDate
     if model == "CCSM":
-        orgDate = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
+        if startDate == None:
+            orgDate = datetime.datetime.strptime(str(dateInput),'%Y-%m-%d')
+        else:
+            orgDate = datetime.datetime.strptime(str(startDate),'%Y-%m-%d')
         orgDateEnd = orgDate
     date = dateInput
     if useDoy == "Yes": 
@@ -67,12 +73,17 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
         nctime = f.variables['time']  # A netCDF time variable object.
         if model == "FLOR" or model == "CCSM":
             #print int(np.where(nctime[:] == int(dateDif.days)+0.5)[0])
+            #print dateDif.days
             #print deltaDays.days
             #print nctime[:]
+            #print orgDateEnd
+            #print orgDate
             #print int(np.where(nctime[:] == int(deltaDays.days)-0.5)[0])
             print np.minimum(int(deltaDays.days)-0.5, np.max(nctime[:]))
             idx = range(int(np.where(nctime[:] == int(dateDif.days)+0.5)[0]), int(np.where(nctime[:] == np.minimum(int(deltaDays.days)-0.5, np.max(nctime[:])))[0])+1)
         else:
+            #print dateDif.days
+            #print deltaDays.days
             idx = range(int(np.where(nctime[:] == int(dateDif.days))[0]), int(np.where(nctime[:] == int(deltaDays.days)-1)[0])+1)
     else:
         if isinstance(date, str) == True:
@@ -81,7 +92,6 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
         # time index (in the netCDF file)
         nctime = f.variables['time']  # A netCDF time variable object.
         idx = int(np.where(nctime[:] == int(dateDif.days))[0])
-    
     outputData = f.variables[varName][idx,:,:]       # still original data
     
     f.close()
@@ -293,14 +303,14 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
                         ensCount = []
                         tempData = np.zeros((ensNr, 180,360))
                         try:
-                            temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                            temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate=startDate)
                             tempData[ens,:,:] = aggregateTime(temp, var=varName)
                             ensCount.append(ens)
                         except:
                             foo = 0
                     else:
                         try:
-                             tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
+                             tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate=startDate), var=varName)
                              ensCount.append(ens)
                         except:
                              foo = 0
@@ -315,11 +325,11 @@ def returnSeasonalForecast(dateInput, endDay, model, varName, lag, month = 0, en
                     print lagToDateStr(startDate, lag, model)
                     print endDate
                     if ens == 0:
-                        temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                        temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate=startDate)
                         tempData = np.zeros((ensNr, 180,360))
                         tempData[ens,:,:] = aggregateTime(temp, var=varName)
                     else:
-                        tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
+                        tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate=startDate), var=varName)
                 if model == "CanCM3":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
@@ -407,13 +417,13 @@ def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0,
                     if ens == 0:
                         tempData = np.zeros((ensNr, 180,360))
                         try:
-                            temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                            temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate=startDate)
                             tempData[ens,:,:] = aggregateTime(temp, var=varName)
                         except:
                             tempData[ens,:,:] = np.nan
                     else:
                         try:
-                             tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
+                             tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate=startDate), var=varName)
                         except:
                              tempData[ens,:,:] = np.nan
                 if model == "FLOR":
@@ -424,11 +434,11 @@ def returnSeasonalForecastFit(dateInput, endDay, model, varName, lag, month = 0,
                     print lagToDateStr(startDate, lag, model)
                     print endDate
                     if ens == 0:
-                        temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
+                        temp = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate=startDate)
                         tempData = np.zeros((ensNr,180,360))
                         tempData[ens,:,:] = aggregateTime(temp, var=varName)
                     else:
-                        tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model), var=varName)
+                        tempData[ens,:,:] = aggregateTime(readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model, startDate=startDate), var=varName)
                 if model == "CanCM3":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
