@@ -99,14 +99,6 @@ def returnCDF(dateInput, endDay, model, varName, lag, month = 0, ensNr = 1, dirL
                         tempData[:,ens,:,:] = temp[0:deltaDay,:,:]
                     else:
                         tempData[:,ens,:,:] = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)[0:deltaDay,:,:]
-                if model == "Weighted":
-                    zero = ""
-                    if len(str(m)) < 2: zero = "0"
-                    ncFile = dirLoc+str(y)+zero+str(m)+"01_forecasts_CanCM3_CanCM4_FLOR.nc"
-                    print ncFile
-                    print lagToDateStr(startDate, lag, model)
-                    print endDate
-                    tempData = readNC(ncFile,varName, lagToDateStr(startDate, lag, model), endDay = endDate, model=model)
                 if model == "CCSM":
                     zero = ""
                     if len(str(m)) < 2: zero = "0"
@@ -301,7 +293,7 @@ if model == "CFS" and varName == "tas":
     factor = 1.
 
 
-ncOutputFile = "../resultsNetCDF/"+model+"_"+varName+"_pctl.nc4"
+ncOutputFile = "../resultsNetCDF/"+model+"_"+varName+"_Avg_pctl.nc4"
 
 startDays = np.tile(["01","16"],24)
 endDays = np.tile(["15","31","15","28","15","31","15","30","15","31","15","30","15","31","15","31","15","30","15","31","15","30","15","31"],2)
@@ -321,11 +313,11 @@ for event in range(0,end,step):
     if model == "CanCM3" or model == "CanCM4" or model == "FLOR" or model =="CCSM" or model == "Weighted" or model == "WeightedEqual":
        data = returnCDF(dateInput, endDay, model, varName, lag, dirLoc = dirLoc, ensNr = ensNr) * factor
        if model == "Weighted" or model == "WeightedEqual":
-         dataVar = returnCDF(dateInput, endDay, model, varName+"_var", lag, dirLoc = dirLoc, ensNr = ensNr) * factor
-         dataAvg = np.copy(data)
-         data = np.zeros((dataAvg.shape[0], dataAvg.shape[1], 9, 180,360))
-         for n in range(9):
-           data[:,:,n,:,:] = dataAvg[:,:,0,:,:] + scipy.stats.norm.ppf((n+1)/10.)*dataVar**0.5
+         #dataVar = returnCDF(dateInput, endDay, model, varName+"_var", lag, dirLoc = dirLoc, ensNr = ensNr) * factor
+         #dataAvg = np.copy(data)
+         #data = np.zeros((dataAvg.shape[0], dataAvg.shape[1], 9, 180,360))
+         #for n in range(9):
+         #  data[:,:,n,:,:] = dataAvg[:,:,0,:,:] + scipy.stats.norm.ppf((n+1)/10.)*dataVar[:,:,0,:,:]**0.5
          if varName == "prec":
            data = np.maximum(data, 0.0)
        numObs = data.shape[0] * data.shape[1] * data.shape[2]

@@ -45,7 +45,7 @@ def readNC(ncFile,varName, dateInput, latPoint = None, lonPoint = None, endDay =
     if model == "PGF":
         orgDate = datetime.datetime(1901,1,1)
         orgDateEnd = orgDate
-    if model == "Weighted":
+    if model == "Weighted" or model == "WeightedEqual":
         orgDate = datetime.datetime(1901,1,1)
         orgDateEnd = orgDate
     if model == "CFS":
